@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/29 10:33:08 by mgeisler          #+#    #+#             */
-/*   Updated: 2025/01/29 18:07:54 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/06 16:43:21 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ int	main(int argc, char **argv) {
 		std::cout << "Wrong number of arguments. Please enter the port and password of the server you want to join." << std::endl;
 		return (1);
 	}
+	
 	std::string port(argv[1]);
 	std::string password(argv[2]);
 
@@ -29,7 +30,7 @@ int	main(int argc, char **argv) {
 	std::cout << "data in class for port: " << data.getPort() << std::endl;
 	std::cout << "data in class for password: " << data.getPassword() << std::endl;
 
-	int epollFD = epoll_create();
+	int epollFD = epoll_create1(0);
 	if(epollFD < 0) {
 		std::cerr << "epoll fd failed." << std::endl;
 		return (1);
