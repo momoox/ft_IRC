@@ -6,7 +6,7 @@
 #    By: mgeisler <mgeisler@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/02/05 16:13:18 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/02/10 18:51:24 by mgeisler         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME		:=	IRC
 
 # ------------------------------ Sources -----------------------------
 
-SRCS		:=	main.cpp servData.cpp \
+SRCS		:=	main.cpp server.cpp \
 
 OBJ_DIR		:=	.objs
 OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
