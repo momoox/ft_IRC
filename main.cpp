@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/10 20:53:00 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/10 21:06:00 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,9 @@ int main(int ac, char **av)
 		epollEvents.data.fd = serverOn.serverFd;
 		epoll_ctl(epollFd, EPOLL_CTL_ADD, serverOn.serverFd, &epollEvents);
 
+		int nbEvents = 0;
 		while (1) {
-			int nbEvents = epoll_wait(epollFd, newClient, MAX_EVENTS, -1);
+			nbEvents = epoll_wait(epollFd, newClient, MAX_EVENTS, -1);
 			std::cout << "nb events: " << nbEvents << std::endl;
 			for (int i = 0; i < nbEvents; i++) {
 				if (newClient[i].data.fd == serverOn.serverFd) {
@@ -55,7 +56,7 @@ int main(int ac, char **av)
 					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
 					if (readBytes < 0)
 						perror("biiiiiite");
-					std::cout << "Message received: " << buffer << std::endl;
+					std::cout << newClientFd << ": " << buffer << std::endl;
 				}
 			}
 		}
