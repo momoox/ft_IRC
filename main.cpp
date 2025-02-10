@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/10 20:30:26 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/10 20:53:00 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int main(int ac, char **av)
 
 	epollFd = epoll_create1(0);
 	try {
-		Server serverOn(6667);
+		Server serverOn(6969);
 
 		socklen_t addrLen = sizeof(serverOn.address);
 
@@ -49,6 +49,13 @@ int main(int ac, char **av)
 					epollEvents.events = EPOLLIN;
 					epollEvents.data.fd = newClientFd;
 					epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+				}
+				else {
+					std::string buffer(1024, 0);
+					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
+					if (readBytes < 0)
+						perror("biiiiiite");
+					std::cout << "Message received: " << buffer << std::endl;
 				}
 			}
 		}
