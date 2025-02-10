@@ -3,55 +3,46 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/29 10:33:08 by mgeisler          #+#    #+#             */
-/*   Updated: 2025/02/06 16:43:21 by mgeisler         ###   ########.fr       */
+/*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
+/*   Updated: 2025/02/10 18:07:24 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include "servData.hpp"
+#include "server.hpp"
 
-//epoll fonctionne pas sur mac lol
+#define MAX_EVENTS 10
 
-int	main(int argc, char **argv) {
-	if (argc < 3) {
-		std::cout << "Wrong number of arguments. Please enter the port and password of the server you want to join." << std::endl;
-		return (1);
+int main(int ac, char **av)
+{
+	int epollFd;
+	int newClientFd;
+	struct epoll_event epollEvents; //
+	struct epoll_event newClient[MAX_EVENTS];
+
+	epollFd = epoll_create1(0);
+	try {
+		Server serverOn(6667);
+		listen(serverOn.serverFd, 10);
+		epollEvents.events = EPOLLIN;
+		epollEvents.data.fd = serverOn.serverFd;
+		epoll_ctl(epollFd, EPOLL_CTL_ADD, serverOn.serverFd, &epollEvents);
+		while (1) {
+			int nbEvents = epoll_wait(epollFd, newClient, MAX_EVENTS, -1);
+			for (int i = 0; i < nbEvents; i++) {
+				if (newClient[i].data.fd == serverOn.serverFd) {
+					newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, (socklen_t *)sizeof(serverOn.address));
+					epollEvents.events = EPOLLIN;
+					epollEvents.data.fd = newClientFd;
+					std::cout << newClientFd << std::endl;
+					epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+				}
+			}
+		}
 	}
-	
-	std::string port(argv[1]);
-	std::string password(argv[2]);
-
-	Server data(port, password);
-
-	std::cout << "data in class for port: " << data.getPort() << std::endl;
-	std::cout << "data in class for password: " << data.getPassword() << std::endl;
-
-	int epollFD = epoll_create1(0);
-	if(epollFD < 0) {
-		std::cerr << "epoll fd failed." << std::endl;
-		return (1);
+	catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
 	}
-
-	int socketServ = socket(AF_INET, SOCK_STREAM, 0);
-	if (socketServ < 0) {
-		std::cerr << "Error during socket creation." << std::endl;
-		return (1);
-	}
-
-	std::cout << "socket: " << socketServ << std::endl;
-	
-	int opt = 1;
-
-	if (setsockopt(socketServ, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-		std::cerr << "Error setting socket options." << std::endl;
-		return (1);
-	}
-
-	
-
-	return (0);
+	return 0;
 }
