@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mgeisler <mgeisler@student.42.fr>          +#+  +:+       +#+         #
+#    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/02/10 18:51:24 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/02/11 18:22:16 by mgeisler         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,14 +14,13 @@ NAME		:=	IRC
 
 # ------------------------------ Sources -----------------------------
 
-SRCS		:=	main.cpp server.cpp \
+SRCS		:=	main.cpp server.cpp main_loop.cpp init_epoll.cpp \
 
 OBJ_DIR		:=	.objs
 OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 
 # ------------------------------ Flags -------------------------------
 
-BREW		:=	$(shell brew --prefix)
 CC			:=	c++
 FLAGS		:=	-Wall -Wextra -Werror -std=c++98
 RM			:=	rm -rf

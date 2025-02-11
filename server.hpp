@@ -3,33 +3,41 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/10 17:37:09 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/11 19:00:45 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <cstring>
-#include <sys/epoll.h>
+#include <list>
+#include "user.hpp"
+
+#define MAX_EVENTS 10
+
+class user;
 
 class Server {
 
-	public :
-		~Server();
-		Server(int port);
+public :
+	~Server();
+	Server(int port, std::string password);
+	Server(const Server &src);
 
-		int serverFd;
-		struct sockaddr_in address;
+	int serverFd;
+	int epollFd;
+	struct sockaddr_in address;
+	struct epoll_event epollEvents;
+	struct epoll_event newClient[MAX_EVENTS];
+		
+private :
+	std::list<User *> _users;
+	int _port;
+	std::string _password;
 
-	private :
-		/* ------------------- */
-		Server();
-		Server(const Server &src);
-		const Server &operator = (const Server &rhs);
+	Server();
+	const Server &operator = (const Server &rhs);
+
 };
