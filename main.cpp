@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/12 17:33:17 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/12 18:09:52 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int main(int ac, char **av)
 					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
 					
 					if (readBytes < 0)
-						perror("biiiiiite");
+						//user disconnected = true;
 
 					//parser de bytes recu
 					//serverOn.parser(buffer);
