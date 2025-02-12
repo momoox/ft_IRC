@@ -6,7 +6,7 @@
 #    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/02/11 18:22:16 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/02/12 16:07:39 by mgeisler         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME		:=	IRC
 
 # ------------------------------ Sources -----------------------------
 
-SRCS		:=	main.cpp server.cpp main_loop.cpp init_epoll.cpp \
+SRCS		:=	main.cpp server.cpp \
 
 OBJ_DIR		:=	.objs
 OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))

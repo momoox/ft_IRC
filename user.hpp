@@ -1,13 +1,13 @@
-#pragma once
+#pragma once 
 
-#include "irc.hpp"
+#include "server.hpp"
 
 class User {
 	private:
 		std::string _nickname;
 		std::string _fullname;
+		std::string	_userIP;
 		bool		_isOp;
-		int			_userFD;
 
 	public:
 		User();
