@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/13 14:34:25 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/13 15:01:23 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,11 @@ Server::Server(int port, std::string password) {
 }
 
 void Server::parser(std::string buffer) {
-	if (buffer.find("CAP LS"))
-		
+	if (buffer.find("CAP LS")) {
+		std::size_t pos = buffer.find("PASS");
+		std::string password = buffer.substr(pos + 1);
+		std::cout << "Password is " << password << std::endl;
+	}
 		
 }
 
