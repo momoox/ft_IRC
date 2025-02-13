@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/12 17:20:18 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/13 14:30:58 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <sys/epoll.h>
-#include <list>
+#include <map>
 #include "user.hpp"
 
 #define MAX_EVENTS 10
@@ -38,12 +38,13 @@ public :
 	Server(const Server &src);
 
 	void parser(std::string buffer);
+	void deleteUser(int clientFd);
 
 	int serverFd;
 	struct sockaddr_in address;
 		
 private :
-	std::list<User *> _users;
+	std::map<int, user *> _users;
 	int _port;
 	std::string _password;
 

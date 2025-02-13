@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/12 17:45:30 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/13 14:34:25 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,15 @@ Server::Server(int port, std::string password) {
 	listen(serverFd, 10);
 }
 
-// void Server::parser(std::string buffer) {
-// 	if (buffer.find("CAP LS"))
+void Server::parser(std::string buffer) {
+	if (buffer.find("CAP LS"))
 		
-// }
+		
+}
+
+void Server::deleteUser(int clientFd) {
+	_users.erase(clientFd);
+}
 
 Server::Server(const Server& serv) {
 	*this = serv;
