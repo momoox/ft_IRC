@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/13 14:30:58 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/17 17:02:04 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,16 +37,16 @@ public :
 	Server(int port, std::string password);
 	Server(const Server &src);
 
-	void parser(std::string buffer);
+	void parser(std::string buffer, int fd);
 	void deleteUser(int clientFd);
 
 	int serverFd;
 	struct sockaddr_in address;
 		
 private :
-	std::map<int, user *> _users;
 	int _port;
 	std::string _password;
+	std::map<int, user *> _users;
 
 	Server();
 	const Server &operator = (const Server &rhs);

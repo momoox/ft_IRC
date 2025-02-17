@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/13 14:34:08 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/17 17:02:15 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ int main(int ac, char **av)
 						serverOn.deleteUser(newClientFd);
 
 					//parser de bytes recu
-					serverOn.parser(buffer);
-					std::cout << newClientFd << ": " << buffer << std::endl;
+					// std::cout << buffer << std::endl;
+					serverOn.parser(buffer, newClientFd);
 				}
 			}
 		}
