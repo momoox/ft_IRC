@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/17 17:05:11 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/17 19:08:13 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,10 @@ Server::Server(int port, std::string password) {
 	listen(serverFd, 10);
 }
 
+//faut stocker un objet dans data.ptr et tout ca la
 
 void Server::parser(std::string buffer, int fd) {
+	(void)fd;
 	if (buffer.find("CAP LS") != std::string::npos) {
 		std::size_t pos = buffer.find("PASS");
 		if (pos != std::string::npos) {
@@ -66,6 +68,9 @@ void Server::parser(std::string buffer, int fd) {
 			std::cout << "User is " << result << std::endl;
 			result.erase();
 		}
+	}
+	else {
+		std::cout << "msg maybe received in multiple parts" << std::endl;
 	}
 }
 
