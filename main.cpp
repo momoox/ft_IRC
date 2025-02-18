@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/17 18:36:57 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/18 13:44:39 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,11 +60,11 @@ int main(int ac, char **av)
 					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
 					
 					if (readBytes < 0)
-						serverOn.deleteUser(newClientFd);
+						serverOn.deleteUser(newClient[i].data.fd);
 
 					//parser de bytes recu
-					std::cout << buffer << std::endl;
-					serverOn.parser(buffer, newClientFd);
+					// std::cout << buffer << std::endl;
+					serverOn.parser(buffer, newClient[i].data.fd);
 				}
 			}
 		}
@@ -75,3 +75,6 @@ int main(int ac, char **av)
 	}
 	return 0;
 }
+
+
+//https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
