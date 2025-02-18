@@ -21,7 +21,7 @@ class User {
 		void setFD(int fd);
 		void setIsOp(bool state);
 
-		std::string valideNick(const std::string& nick);
+		std::string validNick(const std::string& nick);
 		//je sais pas encore s'il y des trucs a check pour le fullname
 		// std::string valideUsername(const std::string& username);
 

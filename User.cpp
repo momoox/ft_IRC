@@ -33,10 +33,11 @@ void User::setIsOp(bool state) {
 	_isOp = state;
 }
 
-std::string User::valideNick(const std::string& nick) {
+std::string User::validNick(const std::string& nick) {
 	//pas de double du meme nickname, pas de #,@,:,' '
 	if (nick.find(' ') || nick.find('@') || nick.find('#') || nick.find(':') || nick.find(',') || nick.find('*') || nick.find('?') || nick.find('!') || nick.find('.') || nick.find('&') || nick.find('+'))
 		throw std::invalid_argument("Nickname invalid");
+	//throw RPL error
 	return (nick);
 }
 
