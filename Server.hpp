@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/18 13:27:22 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/21 19:22:46 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <sys/epoll.h>
 #include <map>
 #include "User.hpp"
+#include "RPL.hpp"
 
 #define MAX_EVENTS 10
 
@@ -37,12 +38,13 @@ public :
 	Server(int port, std::string password);
 	Server(const Server &src);
 
-	void parser(std::string buffer, int clientFD);
+	void parser(std::string buffer, int clientFD, struct epoll_event *events);
 	void deleteUser(int fd);
+	void sendMessage(std::string message, int fd);
 
 	int serverFd;
 	struct sockaddr_in address;
-		
+
 private :
 	int _port;
 	std::string _password;

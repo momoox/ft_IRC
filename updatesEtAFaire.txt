@@ -1,0 +1,8 @@
+// ! FAIT :
+// - validNick
+// - implementation RPL ERR_NICKNAMEINUSE et ERR_ERRONEUSNICKNAME
+// - maj func parser, elle prend mtn events[] pour ajouter user dans data->ptr
+// - func sendMessages pour envoyer des rpl directement
+
+
+// ! A FAIRE :

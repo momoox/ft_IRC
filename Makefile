@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
+#    By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/02/18 11:43:42 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/02/21 19:22:24 by gloms            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME		:=	IRC
 
 # ------------------------------ Sources -----------------------------
 
-SRCS		:=	main.cpp Server.cpp User.cpp\
+SRCS		:=	main.cpp Server.cpp User.cpp \
 
 OBJ_DIR		:=	.objs
 OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))

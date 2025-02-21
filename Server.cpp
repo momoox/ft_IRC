@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/18 13:35:21 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/21 19:25:27 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,11 @@ Server::Server(int port, std::string password) {
 	listen(serverFd, 10);
 }
 
-//faut stocker un objet dans data.ptr et tout ca la
+void Server::sendMessage(std::string message, int fd) {
+    send(fd, message.c_str(), message.size(), 0);
+}
 
-void Server::parser(std::string buffer, int clientFD) {
+void Server::parser(std::string buffer, int clientFD, struct epoll_event *events) {
 	if (buffer.find("CAP LS") != std::string::npos) {
 		User *newUser = new User();
 		std::size_t pos = buffer.find("PASS");
@@ -53,29 +55,12 @@ void Server::parser(std::string buffer, int clientFD) {
 			std::string result = buffer.substr(pos + 5, posOfPass - (pos + 5));
 			std::cout << "Password is " << result << std::endl;
 			if (_password != result) {
+				sendMessage(ERR_PASSWDMISMATCH(newUser->getFullName()), clientFD);
 				delete newUser;
 				//refuse access;
 			}
 			result.erase();
 		}
-
-		pos = buffer.find("NICK");
-		if (pos != std::string::npos) {
-			std::size_t posOfNick = buffer.find('\r', pos + 5);
-			std::string result = buffer.substr(pos + 5, posOfNick - (pos + 5));
-			std::cout << "Nick is " << result << std::endl;
-			//checker que le nickname ne soit pas deja existant pour un autre user
-			try {
-				newUser->setNick(result);
-			}
-			catch (const std::invalid_argument& e) {
-				std::cerr << e.what() << std::endl;
-				delete newUser;
-				return;
-			}
-			result.erase();
-		}
-		
 		pos = buffer.find(":");
 		if (pos != std::string::npos) {
 			std::size_t posOfEndl = buffer.find('\r', pos);
@@ -91,11 +76,38 @@ void Server::parser(std::string buffer, int clientFD) {
 			}
 			result.erase();
 		}
+
+		pos = buffer.find("NICK");
+		if (pos != std::string::npos) {
+			std::size_t posOfNick = buffer.find('\r', pos + 5);
+			std::string result = buffer.substr(pos + 5, posOfNick - (pos + 5));
+			std::cout << "Nick is " << result << std::endl;
+			if (_users.find(result) != _users.end()) {
+				send(clientFD, ERR_NICKNAMEINUSE(newUser->getFullName(), newUser->getNick()).c_str(), ERR_NICKNAMEINUSE(newUser->getFullName(), newUser->getNick()).size(), 0);
+				std::cerr << "client :" << newUser->getFullName() << "Nickname : " << newUser->getNick() << "already in use, connection rejected" << std::endl;
+				delete newUser;
+				//return false
+			}
+			if (result.empty() || !newUser->validNick(result)) {
+				send(clientFD, ERR_ERRONEUSNICKNAME(newUser->getFullName()).c_str(), ERR_ERRONEUSNICKNAME(newUser->getFullName()).size(), 0);
+				std::cerr << "client :" << newUser->getFullName() << "Nickname : " << newUser->getNick() << "is empty, connection rejected" << std::endl;
+				delete newUser;
+				//return false
+			}
+			try {
+				newUser->setNick(result);
+			}
+			catch (const std::invalid_argument& e) {
+				std::cerr << e.what() << std::endl;
+				delete newUser;
+				return;
+			}
+			result.erase();
+		}
+
 		newUser->setFD(clientFD);
 		_users.insert(std::make_pair(newUser->getNick(), newUser));
-	}
-	else {
-		std::cout << "msg maybe received in multiple parts" << std::endl;
+		events->data.ptr = newUser;
 	}
 }
 
