@@ -5,7 +5,6 @@ User::User() {
 	_fullname = "default";
 	_userIP = "default";
 
-	_userDeco = false;
 	_isOp = false;
 
 }
@@ -26,10 +25,6 @@ void User::setUserIP(std::string IP) {
 	_userIP = IP;
 }
 
-void User::setUserDeco(bool state) {
-	_userDeco = state;
-}
-
 void User::setIsOp(bool state) {
 	_isOp = state;
 }
@@ -46,9 +41,6 @@ std::string User::getUserIP() const {
 	return (_userIP);
 }
 
-bool User::getUserDeco() const {
-	return (_userDeco);
-}
 
 bool User::getIsOp() const {
 	return (_isOp);

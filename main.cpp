@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/18 13:44:39 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:39:03 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,3 +78,6 @@ int main(int ac, char **av)
 
 
 //https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
+
+//if (fcntl(SerSocketFd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+//throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
