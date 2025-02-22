@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/21 19:33:59 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/22 17:58:45 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ int main(int ac, char **av)
 				}
 
 				else {
+					//parseBuffer
 					std::string buffer(1024, 0);
 
 					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
@@ -63,10 +64,9 @@ int main(int ac, char **av)
 						serverOn.deleteUser(newClient[i].data.fd);
 
 					//parser de bytes recu
-					std::cout << buffer << std::endl;
+					//std::cout << buffer << std::endl;
 					serverOn.parser(buffer, newClient[i].data.fd, &newClient[i]);
-
-					send(newClient[i].data.fd, buffer.c_str(), buffer.size(), 0);}
+				}
 			}
 		}
 	}

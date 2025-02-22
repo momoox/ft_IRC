@@ -22,6 +22,7 @@ User::User() {
 }
 
 User::~User() {
+	//send RPL goodbye
 	close(_userFD);
 }
 

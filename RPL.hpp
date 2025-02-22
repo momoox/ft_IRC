@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/21 18:14:09 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/22 17:02:12 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 #define MODE(sender, target, mode, arg)                     (":" + sender + "@localhost MODE " + target + " " + mode + " " + arg + "\r\n")
 #define NICK(user, nick)                                    (":" + user + " NICK :" + nick + "\r\n")
 
-#define RPL_WELCOME(user, name)                             (":localhost 001 " + user + " :Welcome to the " + NETWORK + ", " + user + "[!" + name + "@localhost]\r\n")
+#define RPL_WELCOME(user)                            		(":localhost 001 " + user + " :Welcome\r\n")
 #define RPL_YOURHOST(user)                                  (":localhost 002 " + user + " :you server are in localhost, running version " + VERSION + "\r\n")
 #define RPL_CREATED(user, time)                             (":localhost 003 " + user + " :This server was create: " + time + "\r\n")
 #define RPL_MYINFO(user)                                    (":localhost 004 " + user + " " + NETWORK + " " + VERSION + " no user mode , channel modes:,,kl,it \r\n")

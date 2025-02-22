@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/21 19:25:27 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/22 19:42:29 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,8 @@ void Server::parser(std::string buffer, int clientFD, struct epoll_event *events
 		newUser->setFD(clientFD);
 		_users.insert(std::make_pair(newUser->getNick(), newUser));
 		events->data.ptr = newUser;
+		sendMessage(RPL_WELCOME(newUser->getNick()), clientFD);
+
 	}
 }
 
@@ -115,9 +117,10 @@ void Server::deleteUser(int fd) {
 	std::map<std::string, User*>::iterator it;
 	std::string nick;
 
-	for(it = _users.begin(); it != _users.end(); it++)
+	for(it = _users.begin(); it != _users.end(); it++) {
 		if (it->second->getFd() == fd)
 			nick = it->second->getNick();
+	}
 	_users.erase(nick);
 }
 
@@ -125,7 +128,7 @@ Server::Server(const Server& serv) {
 	*this = serv;
 }
 
-const Server& Server::operator=(const Server &rhs) {
+const Server& Server::operator = (const Server &rhs) {
 	(void)rhs;
 	return *this;
 }
