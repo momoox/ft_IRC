@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2025/02/22 01:37:29 by mgeisler         ###   ########.fr       */
-=======
-/*   Updated: 2025/02/21 19:37:38 by gloms            ###   ########.fr       */
->>>>>>> e71cbe645cb2579da2fcd019cee216553eaae5d1
+/*   Updated: 2025/02/22 01:43:57 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,13 +47,8 @@ int main(int ac, char **av)
 					newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, &addrLen);
 
 					if (newClientFd < 0)
-<<<<<<< HEAD
-					perror("biiiiiite");
-					
-=======
 						perror("biiiiiite");
 
->>>>>>> e71cbe645cb2579da2fcd019cee216553eaae5d1
 					epollEvents.events = EPOLLIN;
 					epollEvents.data.fd = newClientFd;
 					epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);

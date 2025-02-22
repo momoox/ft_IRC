@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 01:37:41 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/22 01:44:29 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ void Server::parser(std::string buffer, int clientFD) {
 	if (buffer.find("CAP LS") != std::string::npos) {
 		User *newUser = new User();
 		std::size_t pos;
-		std::cout << "Hello :)" << std::endl;
 		if ((pos = buffer.find("NICK")) && (pos != std::string::npos)) {
 			std::size_t posOfNick = buffer.find('\r', pos + 5);
 			std::string result = buffer.substr(pos + 5, posOfNick - (pos + 5));
