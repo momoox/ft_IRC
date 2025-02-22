@@ -1,5 +1,17 @@
 #include "User.hpp"
 
+bool containsWrongChar(const std::string& str) {
+	for (size_t i = 0; i < str.size(); i++) {
+		if (str[i] < 'a' && str[i] > 'z')
+			return true;
+		else if (str[i] < 'A' && str[i] > 'Z')
+			return true;
+		else if (str[i] < '0' && str[i] > '9')
+			return true;
+	}
+	return false;
+}
+
 User::User() {
 	_nickname = "default";
 	_fullname = "default";
@@ -10,7 +22,8 @@ User::User() {
 }
 
 User::~User() {
-	
+	//send RPL goodbye
+	close(_userFD);
 }
 
 void User::setNick(std::string nickname) {
@@ -33,12 +46,12 @@ void User::setIsOp(bool state) {
 	_isOp = state;
 }
 
-std::string User::validNick(const std::string& nick) {
+bool User::validNick(const std::string& nick) {
 	//pas de double du meme nickname, pas de #,@,:,' '
-	if (nick.find(' ') || nick.find('@') || nick.find('#') || nick.find(':') || nick.find(',') || nick.find('*') || nick.find('?') || nick.find('!') || nick.find('.') || nick.find('&') || nick.find('+'))
-		throw std::invalid_argument("Nickname invalid");
-	//throw RPL error
-	return (nick);
+	if (containsWrongChar(nick)) {
+		return (false);
+	}
+	return (true);
 }
 
 // std::string User::valideUsername(const std::string& username) {

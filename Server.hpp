@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 20:11:05 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/22 22:44:32 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,8 @@ class Server {
 public :
 	~Server();
 	Server(int port, std::string password);
-	Server(const Server &src);
 
 	void parser(std::string buffer, int clientFD, struct epoll_event *events);
-	void deleteUser(int fd);
-	void sendMessage(std::string message, int fd);
 
 
 	/*INITIALISATION*/
@@ -54,10 +51,10 @@ public :
 
 	/*RUNTIME*/
 	void acceptClient();
-	void clientInput();
+	void receiveMessageFromClient(int clientFd);
+	void parserMessage(std::string message);
+	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);
-
-	/*METHODS*/
 
 
 private :
@@ -66,6 +63,7 @@ private :
 	std::map<std::string, User *> _users;
 
 	Server();
+	Server(const Server &src);
 	const Server &operator = (const Server &rhs);
 
 };

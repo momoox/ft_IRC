@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 20:13:48 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/22 23:26:20 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int main(int ac, char **av)
 		while (1) {
 			nbEvents = epoll_wait(server.epollFd, server.newClient, 2, -1);
 			for (int i = 0; i < nbEvents; i++) {
-				if (newClient[i].data.fd == server.serverFd) {
+				if (server.newClient[i].data.fd == server.serverFd) {
 					server.acceptClient();
 				}
 				else {
@@ -36,5 +36,7 @@ int main(int ac, char **av)
 			}
 		}
 	}
-	catch {}
+	catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 }

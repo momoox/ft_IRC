@@ -1,5 +1,9 @@
 #include "Server.hpp"
 
+Server::~Server() {
+	close(serverFd);
+}
+
 Server::Server(int port, std::string password) : _port(port), _password(password)
 {
 	serverFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,8 +51,14 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 	}
 }
 
+void Server::parserMessage(std::string message) {
+	(void)message;
+	std::string cmd;
+	std::string cmdArg;
+}
+
 void	Server::acceptClient() {
-	int newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, &addrLen);
+	int newClientFd = accept(serverFd, (struct sockaddr *)&address, &addrLen);
 
 	if (newClientFd < 0)
 		std::cerr << "Client FD failed: " << strerror(errno) << std::endl;
@@ -65,16 +75,19 @@ void	Server::receiveMessageFromClient(int clientFd) {
 
 	if (readBytes < 0) {
 		if (newClient->data.ptr) {
-			deleteUser(newClient->data.fd)
-			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, nullptr);
+			deleteUser(newClient->data.fd);
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
 		}
 		else {
 			close(clientFd);
-			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, nullptr);
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
 		}
 		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
-	message()
+	std::cout << "send nudes" << std::endl;
+	std::cout << buffer << std::endl;
+	sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
+	//parserMessage(buffer);
 }
 
 void Server::sendMessage(std::string message, int fd) {
@@ -89,6 +102,6 @@ void Server::deleteUser(int fd) {
 		if (it->second->getFd() == fd)
 			nick = it->second->getNick();
 	}
-	delete _users.find(nick)->second();
+	delete _users.find(nick)->second;
 	_users.erase(nick);
 }
