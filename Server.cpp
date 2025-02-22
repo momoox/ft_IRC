@@ -1,121 +1,94 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 01:44:29 by mgeisler         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Server.hpp"
 
-Server::~Server() {
-	close(serverFd);
-	// close(epollFd);
-}
+Server::Server(int port, std::string password) : _port(port), _password(password)
+{
+	serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (serverFd == -1) {
+		std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
+		exit(1);
+	}
 
-Server::Server(int port, std::string password) {
-	_port = port;
-	_password = password;
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
-	serverFd = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (serverFd == -1) {
-        perror("socket creation failed");
-        throw std::runtime_error("socket creation failed");
-    }
 
 	int opt = 1;
     if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
-        throw std::runtime_error("setsockopt failed");
+		std::cerr << "Error setting socket options: " << strerror(errno) << std::endl;
+		exit(1);
 	}
 
-	if (bind(serverFd, (struct sockaddr *)&address, (socklen_t)sizeof(address)) == -1) {
-		perror ("bind");
-		throw std::runtime_error("bind failed");
+	if (bind(serverFd, (struct sockaddr *)&address, sizeof(address)) == -1) {
+		std::cerr << "Error binding socket: " << strerror(errno) << std::endl;
+		exit(1);
 	}
-	listen(serverFd, 10);
+
+	if (listen(serverFd, 10) == -1) {
+		std::cerr << "Error listening on socket: " << strerror(errno) << std::endl;
+		exit(1);
+	}
+
+	if (fcntl(serverFd, F_SETFL, O_NONBLOCK) == -1) {
+		std::cerr << "Error setting server to non-blocking: " << strerror(errno) << std::endl;
+		exit(1);
+	}
+
+	epollFd = epoll_create1(0);
+	if (epollFd == -1) {
+		std::cerr << "Error creating epoll: " << strerror(errno) << std::endl;
+		exit(1);
+	}
+
+	epollEvents.events = EPOLLIN;
+	epollEvents.data.fd = serverFd;
+	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, serverFd, &epollEvents) == -1) {
+		std::cerr << "Error adding server to epoll: " << strerror(errno) << std::endl;
+		exit(1);
+	}
 }
 
-//faut stocker un objet dans data.ptr et tout ca la
+void	Server::acceptClient() {
+	int newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, &addrLen);
 
-void Server::parser(std::string buffer, int clientFD) {
-	if (buffer.find("CAP LS") != std::string::npos) {
-		User *newUser = new User();
-		std::size_t pos;
-		if ((pos = buffer.find("NICK")) && (pos != std::string::npos)) {
-			std::size_t posOfNick = buffer.find('\r', pos + 5);
-			std::string result = buffer.substr(pos + 5, posOfNick - (pos + 5));
-			std::cout << "Nick is " << result << std::endl;
-			//checker que le nickname ne soit pas deja existant pour un autre user
-			try {
-				newUser->setNick(result);
-			}
-			catch (const std::invalid_argument& e) {
-				std::cerr << e.what() << std::endl;
-				delete newUser;
-				return;
-			}
-			result.erase();
-		}
+	if (newClientFd < 0)
+		std::cerr << "Client FD failed: " << strerror(errno) << std::endl;
 
-		//repond au CAP LS du client permettant la suite de la connection
-		std::string reply = ":" + std::string(SERVER_NAME) + " CAP " + newUser->getNick() + " ACK :multi-prefix\r\n";
-		send(clientFD, reply.c_str(), reply.length(), 0);
+	epollEvents.events = EPOLLIN;
+	epollEvents.data.fd = newClientFd;
+	epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+}
 
-		if ((pos = buffer.find("PASS")) && (pos != std::string::npos)) {
-			std::size_t posOfPass = buffer.find('\r', pos + 5);
-			std::string result = buffer.substr(pos + 5, posOfPass - (pos + 5));
-			std::cout << "Password is " << result << std::endl;
-			if (_password != result) {
-				delete newUser;
-				//refuse access;
-			}
-			result.erase();
+void	Server::receiveMessageFromClient(int clientFd) {
+	std::string buffer(1024, 0);
+
+	int readBytes = recv(clientFd, &buffer[0], 1024, 0);
+
+	if (readBytes < 0) {
+		if (newClient->data.ptr) {
+			deleteUser(newClient->data.fd)
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, nullptr);
 		}
-		
-		if ((pos = buffer.find(":")) && (pos != std::string::npos)) {
-			std::size_t posOfEndl = buffer.find('\r', pos);
-			std::string result = buffer.substr(pos + 1, posOfEndl - (pos + 1));
-			std::cout << "User is " << result << std::endl;
-			try{
-				newUser->setFullName(result);
-			}
-			catch (const std::invalid_argument& e) {
-				std::cerr << e.what() << std::endl;
-				delete newUser;
-				return;
-			}
-			result.erase();
+		else {
+			close(clientFd);
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, nullptr);
 		}
-		newUser->setFD(clientFD);
-		_users.insert(std::make_pair(newUser->getNick(), newUser));
+		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
-	else {
-		std::cout << "msg maybe received in multiple parts" << std::endl;
-	}
+	message()
+}
+
+void Server::sendMessage(std::string message, int fd) {
+    send(fd, message.c_str(), message.size(), 0);
 }
 
 void Server::deleteUser(int fd) {
 	std::map<std::string, User*>::iterator it;
 	std::string nick;
 
-	for(it = _users.begin(); it != _users.end(); it++)
+	for(it = _users.begin(); it != _users.end(); it++) {
 		if (it->second->getFd() == fd)
 			nick = it->second->getNick();
+	}
+	delete _users.find(nick)->second();
 	_users.erase(nick);
-}
-
-Server::Server(const Server& serv) {
-	*this = serv;
-}
-
-const Server& Server::operator=(const Server &rhs) {
-	(void)rhs;
-	return *this;
 }

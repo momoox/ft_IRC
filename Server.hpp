@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 01:18:15 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/22 20:11:05 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 #include <unistd.h>
 #include <cstring>
 #include <sys/epoll.h>
 #include <map>
+#include <fcntl.h>
 #include "User.hpp"
+#include "RPL.hpp"
 
 #define MAX_EVENTS 10
-#define SERVER_NAME "127.0.0.1"
 
 class User;
 
@@ -39,13 +39,27 @@ public :
 	Server(int port, std::string password);
 	Server(const Server &src);
 
-	// std::string getLocalIPAddress();
-	void parser(std::string buffer, int clientFD);
+	void parser(std::string buffer, int clientFD, struct epoll_event *events);
 	void deleteUser(int fd);
+	void sendMessage(std::string message, int fd);
 
-	int serverFd;
+
+	/*INITIALISATION*/
 	struct sockaddr_in address;
-		
+	struct epoll_event epollEvents;
+	struct epoll_event newClient[MAX_EVENTS];
+	int serverFd;
+	int epollFd;
+	socklen_t addrLen;
+
+	/*RUNTIME*/
+	void acceptClient();
+	void clientInput();
+	void sendMessage(std::string message, int fd);
+
+	/*METHODS*/
+
+
 private :
 	int _port;
 	std::string _password;

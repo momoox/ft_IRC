@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 01:43:57 by mgeisler         ###   ########.fr       */
+/*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
+/*   Updated: 2025/02/22 20:13:48 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,65 +19,22 @@ int main(int ac, char **av)
 		return (1);
 	}
 
-	int port = atoi(av[1]);
-	std::string password = av[2];
-
-	Server serverOn(port, password);
-
-	struct epoll_event epollEvents;
-	struct epoll_event newClient[MAX_EVENTS];
-
-	int epollFd = epoll_create1(0);
-	epollEvents.events = EPOLLIN;
-	epollEvents.data.fd = serverOn.serverFd;
-	epoll_ctl(epollFd, EPOLL_CTL_ADD, serverOn.serverFd, &epollEvents);
-
-	socklen_t addrLen = sizeof(serverOn.address);
+	Server server(atoi(av[1]), av[2]);
 	int nbEvents = 0;
-	int newClientFd = 0;
 
 	try {
 		while (1) {
-			nbEvents = epoll_wait(epollFd, newClient, MAX_EVENTS, -1);
-			std::cout << "nbEvents: " << nbEvents << std::endl;
-
+			nbEvents = epoll_wait(server.epollFd, server.newClient, 2, -1);
 			for (int i = 0; i < nbEvents; i++) {
-
-				if (newClient[i].data.fd == serverOn.serverFd) {
-					newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, &addrLen);
-
-					if (newClientFd < 0)
-						perror("biiiiiite");
-
-					epollEvents.events = EPOLLIN;
-					epollEvents.data.fd = newClientFd;
-					epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+				if (newClient[i].data.fd == server.serverFd) {
+					server.acceptClient();
 				}
-
 				else {
-					std::string buffer(1024, 0);
-
-					int readBytes = recv(newClient[i].data.fd, &buffer[0], 1024, 0);
-
-					if (readBytes < 0)
-						serverOn.deleteUser(newClient[i].data.fd);
-
-					//parser de bytes recu
-					std::cout << buffer << std::endl;
-					serverOn.parser(buffer, newClient[i].data.fd);
+					server.receiveMessageFromClient(server.newClient[i].data.fd);
+					// handle text or commands
 				}
 			}
 		}
 	}
-
-	catch (const std::exception &e) {
-		std::cerr << e.what() << std::endl;
-	}
-	return 0;
+	catch {}
 }
-
-
-//https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9
-
-//if (fcntl(SerSocketFd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
-//throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
