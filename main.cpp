@@ -6,11 +6,11 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:07 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/21 16:39:03 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/22 01:37:29 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "Server.hpp"
 
 int main(int ac, char **av)
 {
@@ -47,7 +47,7 @@ int main(int ac, char **av)
 					newClientFd = accept(serverOn.serverFd, (struct sockaddr *)&serverOn.address, &addrLen);
 					
 					if (newClientFd < 0)
-						perror("biiiiiite");
+					perror("biiiiiite");
 					
 					epollEvents.events = EPOLLIN;
 					epollEvents.data.fd = newClientFd;
@@ -63,7 +63,7 @@ int main(int ac, char **av)
 						serverOn.deleteUser(newClient[i].data.fd);
 
 					//parser de bytes recu
-					// std::cout << buffer << std::endl;
+					std::cout << buffer << std::endl;
 					serverOn.parser(buffer, newClient[i].data.fd);
 				}
 			}

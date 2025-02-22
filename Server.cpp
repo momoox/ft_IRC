@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/07 17:36:12 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/18 13:35:21 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/02/22 01:37:41 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,20 +47,9 @@ Server::Server(int port, std::string password) {
 void Server::parser(std::string buffer, int clientFD) {
 	if (buffer.find("CAP LS") != std::string::npos) {
 		User *newUser = new User();
-		std::size_t pos = buffer.find("PASS");
-		if (pos != std::string::npos) {
-			std::size_t posOfPass = buffer.find('\r', pos + 5);
-			std::string result = buffer.substr(pos + 5, posOfPass - (pos + 5));
-			std::cout << "Password is " << result << std::endl;
-			if (_password != result) {
-				delete newUser;
-				//refuse access;
-			}
-			result.erase();
-		}
-
-		pos = buffer.find("NICK");
-		if (pos != std::string::npos) {
+		std::size_t pos;
+		std::cout << "Hello :)" << std::endl;
+		if ((pos = buffer.find("NICK")) && (pos != std::string::npos)) {
 			std::size_t posOfNick = buffer.find('\r', pos + 5);
 			std::string result = buffer.substr(pos + 5, posOfNick - (pos + 5));
 			std::cout << "Nick is " << result << std::endl;
@@ -75,9 +64,23 @@ void Server::parser(std::string buffer, int clientFD) {
 			}
 			result.erase();
 		}
+
+		//repond au CAP LS du client permettant la suite de la connection
+		std::string reply = ":" + std::string(SERVER_NAME) + " CAP " + newUser->getNick() + " ACK :multi-prefix\r\n";
+		send(clientFD, reply.c_str(), reply.length(), 0);
+
+		if ((pos = buffer.find("PASS")) && (pos != std::string::npos)) {
+			std::size_t posOfPass = buffer.find('\r', pos + 5);
+			std::string result = buffer.substr(pos + 5, posOfPass - (pos + 5));
+			std::cout << "Password is " << result << std::endl;
+			if (_password != result) {
+				delete newUser;
+				//refuse access;
+			}
+			result.erase();
+		}
 		
-		pos = buffer.find(":");
-		if (pos != std::string::npos) {
+		if ((pos = buffer.find(":")) && (pos != std::string::npos)) {
 			std::size_t posOfEndl = buffer.find('\r', pos);
 			std::string result = buffer.substr(pos + 1, posOfEndl - (pos + 1));
 			std::cout << "User is " << result << std::endl;
