@@ -70,10 +70,22 @@ std::string User::getUserIP() const {
 	return (_userIP);
 }
 
+std::string User::getBuffer() const {
+	return (_buffer);
+}
+
 int User::getFd() const {
 	return (_userFD);
 }
 
 bool User::getIsOp() const {
 	return (_isOp);
+}
+
+void User::addToBuffer(std::string str) {
+	_buffer += str;
+}
+
+void User::eraseBuffer() {
+	_buffer.erase();
 }

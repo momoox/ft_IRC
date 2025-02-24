@@ -7,6 +7,7 @@ class User {
 		std::string _nickname;
 		std::string _fullname;
 		std::string	_userIP;
+		std::string _buffer;
 
 		int			_userFD;
 		bool		_isOp;
@@ -28,7 +29,11 @@ class User {
 		std::string getNick() const;
 		std::string getFullName() const;
 		std::string getUserIP() const;
+		std::string getBuffer() const;
 		int getFd() const;
 		bool getIsOp() const;
+
+		void addToBuffer(std::string str);
+		void eraseBuffer();
 
 };

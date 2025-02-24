@@ -51,10 +51,52 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 	}
 }
 
-void Server::parserMessage(std::string message) {
-	(void)message;
+void Server::parserMessage(const std::string &message, int clientFd) {
 	std::string cmd;
 	std::string cmdArg;
+	std::size_t pos = message.find("\r\n");
+	std::string buffer = message.substr(0, pos + 4);
+
+	while (!buffer.empty()) {
+		if (message.find("CAP")) {
+
+			//creer la map et l'objet user et store les infos user
+			sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
+		}
+
+		else if (message.find("JOIN")) {
+			joinCmd(buffer);
+		}
+
+		else if (message.find("INVITE")) {
+			inviteCmd(buffer);
+		}
+
+		else if (message.find("KICK")) {
+			kickCmd(buffer);
+		}
+
+		else if (message.find("TOPIC")) {
+			topicCmd(buffer);
+		}
+
+		else if (message.find("MODE")) {
+			modeCmd(buffer);
+		}
+
+		else if (message.find("PRIVMSG")) {
+			privmsgCmd(buffer);
+		}
+
+		else {
+			sendMessage("cmd existe ap wsh", clientFd);
+		}
+		//buffer
+	}
+	// std::istringstream iss(message);
+
+	// iss >> cmd;
+
 }
 
 void	Server::acceptClient() {
@@ -84,10 +126,45 @@ void	Server::receiveMessageFromClient(int clientFd) {
 		}
 		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
-	std::cout << "send nudes" << std::endl;
-	std::cout << buffer << std::endl;
-	sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
-	//parserMessage(buffer);
+	std::cout << getUserFromFd(clientFd)->getBuffer() << std::endl;
+
+	if (buffer.substr(buffer.size() - 4, buffer.size()) == "\r\n") {
+		parserMessage(getUserFromFd(clientFd)->getBuffer(), clientFd);
+		getUserFromFd(clientFd)->eraseBuffer();
+	}
+	else {
+		std::cout  << "hihi" << std::endl;
+	}
+}
+
+void	Server::joinCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans JOIN :)" << std::endl;
+}
+
+void	Server::inviteCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans INVITE :)" << std::endl;
+}
+
+void	Server::kickCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans KICK :)" << std::endl;
+}
+
+void	Server::topicCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans TOPIC :)" << std::endl;
+}
+
+void	Server::modeCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans MODE :)" << std::endl;
+}
+
+void	Server::privmsgCmd(std::string buffer) {
+	(void)buffer;
+	std::cout << "Bien arrive dans PRIVMSG :)" << std::endl;
 }
 
 void Server::sendMessage(std::string message, int fd) {
@@ -104,4 +181,15 @@ void Server::deleteUser(int fd) {
 	}
 	delete _users.find(nick)->second;
 	_users.erase(nick);
+}
+
+User* Server::getUserFromFd(int fd) {
+	std::map<std::string, User*>::iterator it;
+	std::string nick;
+
+	for(it = _users.begin(); it != _users.end(); it++) {
+		if (it->second->getFd() == fd)
+			nick = it->second->getNick();
+	}
+	return it->second;
 }

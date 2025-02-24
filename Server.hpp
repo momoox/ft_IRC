@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 22:44:32 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/24 19:35:36 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <sys/epoll.h>
 #include <map>
 #include <fcntl.h>
+#include <sstream>
 #include "User.hpp"
 #include "RPL.hpp"
 
@@ -38,8 +39,6 @@ public :
 	~Server();
 	Server(int port, std::string password);
 
-	void parser(std::string buffer, int clientFD, struct epoll_event *events);
-
 
 	/*INITIALISATION*/
 	struct sockaddr_in address;
@@ -49,12 +48,21 @@ public :
 	int epollFd;
 	socklen_t addrLen;
 
+	/*CMD*/
+	void	joinCmd(std::string buffer);
+	void	inviteCmd(std::string buffer);
+	void	kickCmd(std::string buffer);
+	void	topicCmd(std::string buffer);
+	void	modeCmd(std::string buffer);
+	void	privmsgCmd(std::string buffer);
+
 	/*RUNTIME*/
 	void acceptClient();
 	void receiveMessageFromClient(int clientFd);
-	void parserMessage(std::string message);
+	void parserMessage(const std::string &message, int clientFd);
 	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);
+	User* getUserFromFd(int fd);
 
 
 private :
