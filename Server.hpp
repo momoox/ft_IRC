@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/24 19:35:36 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/25 18:48:07 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,8 @@ public :
 	void	privmsgCmd(std::string buffer);
 
 	/*RUNTIME*/
-	void acceptClient();
-	void receiveMessageFromClient(int clientFd);
+	void acceptClient(struct epoll_event &client);
+	void receiveMessageFromClient(int clientFd, struct epoll_event &client);
 	void parserMessage(const std::string &message, int clientFd);
 	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);

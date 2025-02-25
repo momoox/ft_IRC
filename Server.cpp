@@ -64,6 +64,10 @@ void Server::parserMessage(const std::string &message, int clientFd) {
 			sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
 		}
 
+		else if (message.find("NICK")) {
+			
+		}
+
 		else if (message.find("JOIN")) {
 			joinCmd(buffer);
 		}
@@ -99,25 +103,29 @@ void Server::parserMessage(const std::string &message, int clientFd) {
 
 }
 
-void	Server::acceptClient() {
+void	Server::acceptClient(struct epoll_event &client) {
 	int newClientFd = accept(serverFd, (struct sockaddr *)&address, &addrLen);
 
 	if (newClientFd < 0)
 		std::cerr << "Client FD failed: " << strerror(errno) << std::endl;
 
+	User* newClient = new User(newClientFd);
+	client.data.ptr = (void *)newClient;
 	epollEvents.events = EPOLLIN;
 	epollEvents.data.fd = newClientFd;
 	epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+	std::cout << "newClient: " << newClient << " (" << newClientFd << ")" << std::endl;
+	std::cout << "data.ptr: " << client.data.ptr << std::endl;
 }
 
-void	Server::receiveMessageFromClient(int clientFd) {
-	std::string buffer(1024, 0);
+void	Server::receiveMessageFromClient(int clientFd, struct epoll_event &client) {
+	char buffer[1024];
 
 	int readBytes = recv(clientFd, &buffer[0], 1024, 0);
 
 	if (readBytes < 0) {
-		if (newClient->data.ptr) {
-			deleteUser(newClient->data.fd);
+		if (client.data.ptr) {
+			deleteUser(client.data.fd);
 			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
 		}
 		else {
@@ -126,14 +134,30 @@ void	Server::receiveMessageFromClient(int clientFd) {
 		}
 		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
-	std::cout << getUserFromFd(clientFd)->getBuffer() << std::endl;
+	User* user = static_cast<User*>(client.data.ptr);
+	if (!user) {
+        std::cerr << "Error: user pointer is null" << std::endl;
+        return;
+    }
+	std::cout << user << std::endl;
+	std::cout << "2" << client.data.ptr;
 
-	if (buffer.substr(buffer.size() - 4, buffer.size()) == "\r\n") {
-		parserMessage(getUserFromFd(clientFd)->getBuffer(), clientFd);
-		getUserFromFd(clientFd)->eraseBuffer();
+	if (readBytes > 0) {
+        buffer[readBytes] = '\0'; // Null-terminate the buffer
+		std::cout << "teeeeesssst" << std::endl;
+		std::string buff_str = std::string(buffer);
+        user->addToBuffer(buff_str);
+    }
+	
+	if (readBytes >= 2 && strncmp(buffer + readBytes - 2, "\r\n", 2) == 0) {
+		// user->addToBuffer(std::string(buffer));
+		parserMessage(user->getBuffer(), clientFd);
+		user->eraseBuffer();
 	}
 	else {
-		std::cout  << "hihi" << std::endl;
+		std::string buff_str = std::string(buffer);
+		user->addToBuffer(buff_str);
+		perror("error:");
 	}
 }
 

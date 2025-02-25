@@ -13,7 +13,7 @@ class User {
 		bool		_isOp;
 
 	public:
-		User();
+		User(int fd);
 		~User();
 
 		void setNick(std::string nickname);

@@ -12,11 +12,13 @@ bool containsWrongChar(const std::string& str) {
 	return false;
 }
 
-User::User() {
+User::User(int fd) {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	_nickname = "default";
 	_fullname = "default";
 	_userIP = "default";
-	_userFD = 0;
+	_userFD = fd;
+	_buffer = std::string("");
 
 	_isOp = false;
 }
@@ -83,6 +85,8 @@ bool User::getIsOp() const {
 }
 
 void User::addToBuffer(std::string str) {
+	std::cout << "str = [" << str << "]" << std::endl;
+	std::cout << "buffer = [" << _buffer << "]" << std::endl;
 	_buffer += str;
 }
 
