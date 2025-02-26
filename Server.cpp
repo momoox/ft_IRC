@@ -97,13 +97,13 @@ void Server::parserMessage(std::string message, int clientFd) {
 	while (!buffer.empty()) {
 		if (buffer.find("CAP LS") != std::string::npos) {
 			// registerUser(buffer, clientFd);
-			sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
+			sendMessage(CAP_LS, clientFd);
 		}
-
+		
 		else if (buffer.find("JOIN") != std::string::npos) {
 			joinCmd(buffer);
 		}
-
+		
 		else if (buffer.find("INVITE") != std::string::npos) {
 			inviteCmd(buffer);
 		}
@@ -134,6 +134,12 @@ void Server::parserMessage(std::string message, int clientFd) {
 
 		else if (buffer.find("USER") != std::string::npos) {
 			userCmd(buffer, clientFd);
+		}
+		else if (buffer.find("CAP END") != std::string::npos) {
+			sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
+		}
+		else if (buffer.find("PING") != std::string::npos) {
+			sendMessage("PONG", clientFd);
 		}
 
 		else {
@@ -235,25 +241,29 @@ void	Server::privmsgCmd(std::string buffer) {
 
 void Server::passCmd(std::string buffer, int fd) {
 	std::size_t pos = buffer.find("PASS");
-	std::string pwd = buffer.substr(pos + 5, buffer.find("\r\n") - 2);
+	std::string pwd = buffer.substr(pos + 5, buffer.find("\r\n") - (pos + 5));
 	std::cout << "password: " << pwd << std::endl;
+	std::cout << "server password: " << _password << std::endl;
 
 	if (pwd != _password) {
+		std::cout << "oh nooo" << std::endl;
 		deleteUser(fd);
 	}
 }
 
 void Server::nickCmd(std::string buffer, int fd) {
 	std::size_t pos = buffer.find("NICK");
-	std::string newNick = buffer.substr(pos + 5, buffer.find("\r\n") - 7);
+	std::string newNick = buffer.substr(pos + 5, buffer.find("\r\n") - (pos + 5));
 	std::cout << "nick: " << newNick << std::endl;
 
-	_users.find(fd)->second->setNick(newNick);
+	if (_users.find(fd)->second->validNick(newNick)) {
+		_users.find(fd)->second->setNick(newNick);
+	}
 }
 
 void Server::userCmd(std::string buffer, int fd) {
-	std::size_t pos = buffer.find("USER");
-	std::string fullname = buffer.substr(pos, buffer.find("\r\n") - 7);
+	std::size_t pos = buffer.find(":");
+	std::string fullname = buffer.substr(pos + 1, buffer.find("\r\n") - (pos + 1));
 	std::cout << "user: " << fullname << std::endl;
 	_users.find(fd)->second->setFullName(fullname);
 }
