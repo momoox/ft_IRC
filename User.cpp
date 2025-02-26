@@ -13,12 +13,10 @@ bool containsWrongChar(const std::string& str) {
 }
 
 User::User(int fd) {
-	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	_nickname = "default";
 	_fullname = "default";
 	_userIP = "default";
 	_userFD = fd;
-	_buffer = std::string("");
 
 	_isOp = false;
 }
