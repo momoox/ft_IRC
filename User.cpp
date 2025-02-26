@@ -12,11 +12,11 @@ bool containsWrongChar(const std::string& str) {
 	return false;
 }
 
-User::User() {
+User::User(int fd) {
 	_nickname = "default";
 	_fullname = "default";
 	_userIP = "default";
-	_userFD = 0;
+	_userFD = fd;
 
 	_isOp = false;
 }

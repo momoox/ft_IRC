@@ -1,13 +1,13 @@
 #include "Server.hpp"
 
 Server::~Server() {
-	close(serverFd);
+	close(_serverFd);
 }
 
 Server::Server(int port, std::string password) : _port(port), _password(password)
 {
-	serverFd = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverFd == -1) {
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverFd == -1) {
 		std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
 		exit(1);
 	}
@@ -17,124 +17,190 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 	address.sin_port = htons(port);
 
 	int opt = 1;
-    if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+    if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
 		std::cerr << "Error setting socket options: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
-	if (bind(serverFd, (struct sockaddr *)&address, sizeof(address)) == -1) {
+	if (bind(_serverFd, (struct sockaddr *)&address, sizeof(address)) == -1) {
 		std::cerr << "Error binding socket: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
-	if (listen(serverFd, 10) == -1) {
+	if (listen(_serverFd, 10) == -1) {
 		std::cerr << "Error listening on socket: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
-	if (fcntl(serverFd, F_SETFL, O_NONBLOCK) == -1) {
+	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) == -1) {
 		std::cerr << "Error setting server to non-blocking: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
-	epollFd = epoll_create1(0);
-	if (epollFd == -1) {
+	_epollFd = epoll_create1(0);
+	if (_epollFd == -1) {
 		std::cerr << "Error creating epoll: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
 	epollEvents.events = EPOLLIN;
-	epollEvents.data.fd = serverFd;
-	if (epoll_ctl(epollFd, EPOLL_CTL_ADD, serverFd, &epollEvents) == -1) {
+	epollEvents.data.fd = _serverFd;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverFd, &epollEvents) == -1) {
 		std::cerr << "Error adding server to epoll: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 }
 
-void Server::parserMessage(const std::string &message, int clientFd) {
+int Server::getEpollFd() const {
+	return (_epollFd);
+}
+int Server::getServerFd() const {
+	return (_serverFd);
+}
+
+socklen_t Server::getAddrLen() const {
+	return (_addrLen);
+}
+
+// void Server::registerUser(std::string buffer, int fd) {
+// 	if (buffer.find("PASS") != std::string::npos) {
+// 		std::size_t pos = buffer.find("PASS");
+// 		std::string pwd = buffer.substr(pos + 5, buffer.find("\r\n") - 7);
+// 		std::cout << "password: " << pwd << std::endl;
+
+// 		if (pwd != _password) {
+// 			deleteUser(fd);
+// 		}
+// 	}
+
+// 	if (buffer.find("NICK") != std::string::npos) {
+// 		nickCmd(buffer, fd);
+// 	}
+
+// 	if (buffer.find("USER") != std::string::npos) {
+// 		std::size_t pos = buffer.find("USER");
+// 		std::string fullname = buffer.substr(pos, buffer.find("\r\n") - 7);
+// 		std::cout << "user: " << fullname << std::endl;
+// 		_users.find(fd)->second->setFullName(fullname);
+// 	}
+// }
+
+void Server::parserMessage(std::string message, int clientFd) {
 	std::string cmd;
 	std::string cmdArg;
 	std::size_t pos = message.find("\r\n");
-	std::string buffer = message.substr(0, pos + 4);
+	std::string buffer = message.substr(0, pos + 2);
+	// std::string nextBuffer;
 
+	std::cout << "Buffer: " << buffer << std::endl;
+	std::cout << "Message: " << message << std::endl;
 	while (!buffer.empty()) {
-		if (message.find("CAP")) {
-
-			//creer la map et l'objet user et store les infos user
+		if (buffer.find("CAP LS") != std::string::npos) {
+			// registerUser(buffer, clientFd);
 			sendMessage(":localhost 001 rbrendle :Welcome\r\n", clientFd);
 		}
 
-		else if (message.find("JOIN")) {
+		else if (buffer.find("JOIN") != std::string::npos) {
 			joinCmd(buffer);
 		}
 
-		else if (message.find("INVITE")) {
+		else if (buffer.find("INVITE") != std::string::npos) {
 			inviteCmd(buffer);
 		}
 
-		else if (message.find("KICK")) {
+		else if (buffer.find("KICK") != std::string::npos) {
 			kickCmd(buffer);
 		}
 
-		else if (message.find("TOPIC")) {
+		else if (buffer.find("TOPIC") != std::string::npos) {
 			topicCmd(buffer);
 		}
 
-		else if (message.find("MODE")) {
+		else if (buffer.find("MODE") != std::string::npos) {
 			modeCmd(buffer);
 		}
 
-		else if (message.find("PRIVMSG")) {
+		else if (buffer.find("PRIVMSG") != std::string::npos) {
 			privmsgCmd(buffer);
+		}
+
+		else if (buffer.find("PASS") != std::string::npos) {
+			passCmd(buffer, clientFd);
+		}
+
+		else if (buffer.find("NICK") != std::string::npos) {
+			nickCmd(buffer, clientFd);
+		}
+
+		else if (buffer.find("USER") != std::string::npos) {
+			userCmd(buffer, clientFd);
 		}
 
 		else {
 			sendMessage("cmd existe ap wsh", clientFd);
 		}
-		//buffer
+		buffer = message.substr(pos + 2, message.find("\r\n", pos + 2) - (pos + 2));
+		message = message.substr(pos + 2, message.size() - (pos + 2));
+		pos = message.find("\r\n");
+		std::cout << "buffer after substr: " << buffer << std::endl;
+		std::cout << "message after substr: " << message << std::endl;
 	}
-	// std::istringstream iss(message);
-
-	// iss >> cmd;
-
 }
 
 void	Server::acceptClient() {
-	int newClientFd = accept(serverFd, (struct sockaddr *)&address, &addrLen);
+	struct epoll_event event;
+	struct sockaddr_in client;
+	socklen_t len = sizeof(client);
+
+	int newClientFd = accept(_serverFd, (struct sockaddr *)&client, &len);
 
 	if (newClientFd < 0)
 		std::cerr << "Client FD failed: " << strerror(errno) << std::endl;
 
-	epollEvents.events = EPOLLIN;
-	epollEvents.data.fd = newClientFd;
-	epoll_ctl(epollFd, EPOLL_CTL_ADD, newClientFd, &epollEvents);
+	User* user = new User(newClientFd);
+	event.events = EPOLLIN;
+	event.data.ptr = user;
+	_users.insert(std::make_pair(newClientFd, user));
+	epoll_ctl(_epollFd, EPOLL_CTL_ADD, newClientFd, &event);
 }
 
-void	Server::receiveMessageFromClient(int clientFd) {
-	std::string buffer(1024, 0);
+void	Server::receiveMessageFromClient(int clientFd, User* user) {
+	char buffer[1024];
 
-	int readBytes = recv(clientFd, &buffer[0], 1024, 0);
+	int readBytes = recv(clientFd, buffer, 1024, 0);
 
 	if (readBytes < 0) {
-		if (newClient->data.ptr) {
-			deleteUser(newClient->data.fd);
-			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
+		if (user) {
+			deleteUser(user->getFd());
+			epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL);
 		}
 		else {
 			close(clientFd);
-			epoll_ctl(epollFd, EPOLL_CTL_DEL, clientFd, NULL);
+			epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL);
 		}
 		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
-	std::cout << getUserFromFd(clientFd)->getBuffer() << std::endl;
 
-	if (buffer.substr(buffer.size() - 4, buffer.size()) == "\r\n") {
-		parserMessage(getUserFromFd(clientFd)->getBuffer(), clientFd);
-		getUserFromFd(clientFd)->eraseBuffer();
-	}
-	else {
-		std::cout  << "hihi" << std::endl;
-	}
+	// std::cout << "Buffer after receive: " << buffer << std::endl;
+
+	if (readBytes > 0) {
+        buffer[readBytes] = '\0'; // Null-terminate the buffer
+        std::string buff_str = std::string(buffer);
+        user->addToBuffer(buff_str);
+    }
+
+    if (readBytes >= 2 && strncmp(buffer + readBytes - 2, "\r\n", 2) == 0) {
+        //user->addToBuffer(std::string(buffer));
+        parserMessage(user->getBuffer(), clientFd);
+        user->eraseBuffer();
+    }
+
+    else {
+        std::string buff_str = std::string(buffer);
+        user->addToBuffer(buff_str);
+    }
+
+	// std::cout << getUserFromFd(clientFd)->getBuffer() << std::endl;
 }
 
 void	Server::joinCmd(std::string buffer) {
@@ -167,29 +233,47 @@ void	Server::privmsgCmd(std::string buffer) {
 	std::cout << "Bien arrive dans PRIVMSG :)" << std::endl;
 }
 
+void Server::passCmd(std::string buffer, int fd) {
+	std::size_t pos = buffer.find("PASS");
+	std::string pwd = buffer.substr(pos + 5, buffer.find("\r\n") - 2);
+	std::cout << "password: " << pwd << std::endl;
+
+	if (pwd != _password) {
+		deleteUser(fd);
+	}
+}
+
+void Server::nickCmd(std::string buffer, int fd) {
+	std::size_t pos = buffer.find("NICK");
+	std::string newNick = buffer.substr(pos + 5, buffer.find("\r\n") - 7);
+	std::cout << "nick: " << newNick << std::endl;
+
+	_users.find(fd)->second->setNick(newNick);
+}
+
+void Server::userCmd(std::string buffer, int fd) {
+	std::size_t pos = buffer.find("USER");
+	std::string fullname = buffer.substr(pos, buffer.find("\r\n") - 7);
+	std::cout << "user: " << fullname << std::endl;
+	_users.find(fd)->second->setFullName(fullname);
+}
+
 void Server::sendMessage(std::string message, int fd) {
     send(fd, message.c_str(), message.size(), 0);
 }
 
 void Server::deleteUser(int fd) {
-	std::map<std::string, User*>::iterator it;
-	std::string nick;
-
-	for(it = _users.begin(); it != _users.end(); it++) {
-		if (it->second->getFd() == fd)
-			nick = it->second->getNick();
-	}
-	delete _users.find(nick)->second;
-	_users.erase(nick);
+	delete _users.find(fd)->second;
+	_users.erase(fd);
 }
 
-User* Server::getUserFromFd(int fd) {
-	std::map<std::string, User*>::iterator it;
-	std::string nick;
+// User* Server::getUserFromFd(int fd) {
+// 	std::map<std::string, User*>::iterator it;
+// 	std::string nick;
 
-	for(it = _users.begin(); it != _users.end(); it++) {
-		if (it->second->getFd() == fd)
-			nick = it->second->getNick();
-	}
-	return it->second;
-}
+// 	for(it = _users.begin(); it != _users.end(); it++) {
+// 		if (it->second->getFd() == fd)
+// 			nick = it->second->getNick();
+// 	}
+// 	return it->second;
+// }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/24 19:35:36 by gloms            ###   ########.fr       */
+/*   Updated: 2025/02/26 16:40:02 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,7 @@ public :
 	struct sockaddr_in address;
 	struct epoll_event epollEvents;
 	struct epoll_event newClient[MAX_EVENTS];
-	int serverFd;
-	int epollFd;
-	socklen_t addrLen;
-
+	
 	/*CMD*/
 	void	joinCmd(std::string buffer);
 	void	inviteCmd(std::string buffer);
@@ -55,20 +52,30 @@ public :
 	void	topicCmd(std::string buffer);
 	void	modeCmd(std::string buffer);
 	void	privmsgCmd(std::string buffer);
-
+	void	passCmd(std::string buffer, int fd);
+	void	nickCmd(std::string buffer, int fd);
+	void	userCmd(std::string buffer, int fd);
+	
 	/*RUNTIME*/
 	void acceptClient();
-	void receiveMessageFromClient(int clientFd);
-	void parserMessage(const std::string &message, int clientFd);
+	void receiveMessageFromClient(int clientFd, User* user);
+	void parserMessage(std::string message, int clientFd);
+	void registerUser(std::string buffer, int fd);
 	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);
-	User* getUserFromFd(int fd);
-
-
+	// User* getUserFromFd(int fd);
+	
+	int getEpollFd() const;
+	int getServerFd() const;
+	socklen_t getAddrLen() const;
+	
 private :
-	int _port;
+int _port;
 	std::string _password;
-	std::map<std::string, User *> _users;
+	std::map<int, User *> _users;
+	int _serverFd;
+	int _epollFd;
+	socklen_t _addrLen;
 
 	Server();
 	Server(const Server &src);
