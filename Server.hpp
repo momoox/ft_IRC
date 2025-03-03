@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/26 17:04:15 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/03 13:37:24 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,29 @@
 #include <fcntl.h>
 #include <sstream>
 #include "User.hpp"
+#include "Channel.hpp"
 #include "RPL.hpp"
 
 #define MAX_EVENTS 10
 
 class User;
+class Channel;
 
 class Server {
+private :
+	int _port;
+	std::string _password;
+	int _serverFd;
+	int _epollFd;
+	
+	socklen_t _addrLen;
+	
+	std::map<int, User *> _users;
+	std::map<std::string, Channel*> _channelInfos;
+
+	Server();
+	Server(const Server &src);
+	const Server &operator = (const Server &rhs);
 
 public :
 	~Server();
@@ -46,11 +62,11 @@ public :
 	struct epoll_event newClient[MAX_EVENTS];
 	
 	/*CMD*/
-	void	joinCmd(std::string buffer);
+	void	joinCmd(std::string buffer, int clientFd);
 	void	inviteCmd(std::string buffer);
 	void	kickCmd(std::string buffer);
 	void	topicCmd(std::string buffer);
-	void	modeCmd(std::string buffer);
+	void	modeCmd(std::string buffer, int clientFd);
 	void	privmsgCmd(std::string buffer);
 	void	passCmd(std::string buffer, int fd);
 	void	nickCmd(std::string buffer, int fd);
@@ -69,16 +85,5 @@ public :
 	int getServerFd() const;
 	socklen_t getAddrLen() const;
 	
-private :
-int _port;
-	std::string _password;
-	std::map<int, User *> _users;
-	int _serverFd;
-	int _epollFd;
-	socklen_t _addrLen;
-
-	Server();
-	Server(const Server &src);
-	const Server &operator = (const Server &rhs);
 
 };

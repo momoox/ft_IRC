@@ -17,6 +17,7 @@ User::User(int fd) {
 	_fullname = "default";
 	_userIP = "default";
 	_userFD = fd;
+	_channelName = "default";
 
 	_isOp = false;
 }
@@ -38,12 +39,20 @@ void User::setUserIP(std::string IP) {
 	_userIP = IP;
 }
 
+void User::setChannelName(std::string channel) {
+	_channelName = channel;
+}
+
 void User::setFD(int fd) {
 	_userFD = fd;
 }
 
 void User::setIsOp(bool state) {
 	_isOp = state;
+}
+
+void User::setInvited(bool state) {
+	_invited = state;
 }
 
 bool User::validNick(const std::string& nick) {
@@ -74,6 +83,10 @@ std::string User::getBuffer() const {
 	return (_buffer);
 }
 
+std::string User::getChannelName() const {
+	return (_channelName);
+}
+
 int User::getFd() const {
 	return (_userFD);
 }
@@ -82,9 +95,13 @@ bool User::getIsOp() const {
 	return (_isOp);
 }
 
+bool User::getInvite() const {
+	return (_invited);
+}
+
 void User::addToBuffer(std::string str) {
-	std::cout << "str = [" << str << "]" << std::endl;
-	std::cout << "buffer = [" << _buffer << "]" << std::endl;
+	// std::cout << "str = [" << str << "]" << std::endl;
+	// std::cout << "buffer = [" << _buffer << "]" << std::endl;
 	_buffer += str;
 }
 
