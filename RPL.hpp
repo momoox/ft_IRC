@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RPL.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/22 17:02:12 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/06 23:38:24 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@
 #define RPL_UMODEIS(user, mode)                             (":localhost 221 " + user + " " + mode + "\r\n")
 #define RPL_CHANNELMODEIS(user, channel, limit)             (":localhost 324 " + user + " " + channel + " " + limit + "\r\n")
 #define RPL_CREATIONTIME(user, channel, time)               (":localhost 329 " + user + " " + channel + " " + time + "\r\n")
-#define RPL_NOTOPIC(user, channel)                          (":localhost 331 " + user + " " + channel + " :" + topic + "\r\n")
+#define RPL_NOTOPIC(user, channel)                          (":localhost 331 " + user + " " + channel + " :" + "\r\n")
 #define RPL_TOPIC(user, channel, topic)                     (":localhost 332 " + user + " " + channel + " :" + topic + "\r\n")
 #define RPL_INVITING(user, target, channel)                 (":localhost 341 " + user + " " + target + " " + channel + "\r\n")
 #define RPL_WHOREPLY(client, chan, user, nick, realname)    (":localhost 352 " + client + " " + chan + " " + user + " localhost FT_IRC " + nick + " H :0 " + realname + "\r\n")

@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/03 13:37:24 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/06 20:04:55 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,14 +63,16 @@ public :
 	
 	/*CMD*/
 	void	joinCmd(std::string buffer, int clientFd);
-	void	inviteCmd(std::string buffer);
-	void	kickCmd(std::string buffer);
-	void	topicCmd(std::string buffer);
+	void	inviteCmd(std::string buffer, int clientFd);
+	void	kickCmd(std::string buffer, int clientFd);
+	void	topicCmd(std::string buffer, int clientFd);
 	void	modeCmd(std::string buffer, int clientFd);
 	void	privmsgCmd(std::string buffer);
 	void	passCmd(std::string buffer, int fd);
 	void	nickCmd(std::string buffer, int fd);
 	void	userCmd(std::string buffer, int fd);
+	
+	int getUserFromNick(std::string nickname) const;
 	
 	/*RUNTIME*/
 	void acceptClient();
@@ -79,7 +81,6 @@ public :
 	void registerUser(std::string buffer, int fd);
 	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);
-	// User* getUserFromFd(int fd);
 	
 	int getEpollFd() const;
 	int getServerFd() const;

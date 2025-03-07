@@ -44,6 +44,10 @@ void Channel::setPasswordChannel(std::string password) {
 	_passwordChannel = password;
 }
 
+void Channel::setTopic(std::string topic) {
+	_topic = topic;
+}
+
 void Channel::setCurrentUsers() {
 	_currentUsers += 1; 
 }
@@ -68,6 +72,10 @@ std::string Channel::getPasswordChannel() const {
 	return (_passwordChannel);
 }
 
+std::string Channel::getTopic() const{
+	return (_topic);
+}
+
 int Channel::getCurrentUsers() const {
 	return (_currentUsers);
 }
@@ -82,4 +90,22 @@ bool Channel::getInviteMode() const {
 
 bool Channel::getTopicMode() const {
 	return (_topicMode);
+}
+
+void Channel::kickUserFromChannel(int clientFd) {
+
+    std::map<int, User*>::iterator it = _usersInChannel.find(clientFd);
+
+    if (it != _usersInChannel.end()) {
+        delete it->second;
+        _usersInChannel.erase(it);
+    }
+}
+
+void	Channel::sendAllUsers(std::string message) {
+	std::map<int, User*>::iterator it;
+
+	for (it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
+		send(it->first, message.c_str(), message.size(), 0);	
+	}
 }

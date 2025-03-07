@@ -85,15 +85,15 @@ void Server::parserMessage(std::string message, int clientFd) {
 		}
 		
 		else if (buffer.find("INVITE") != std::string::npos) {
-			inviteCmd(buffer);
+			inviteCmd(buffer, clientFd);
 		}
 
 		else if (buffer.find("KICK") != std::string::npos) {
-			kickCmd(buffer);
+			kickCmd(buffer, clientFd);
 		}
 
 		else if (buffer.find("TOPIC") != std::string::npos) {
-			topicCmd(buffer);
+			topicCmd(buffer, clientFd);
 		}
 
 		else if (buffer.find("MODE") != std::string::npos) {
@@ -191,79 +191,212 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 }
 
 void	Server::joinCmd(std::string buffer, int clientFd) {
-	// checker la cmd en entier (JOIN #nomduchannel)
-	// creation du channel s'il n'existe pas 
-	// voir si le client peut rejoindre, checker mode invite
 
-	std::cout << "buffer when in join: " << buffer << std::endl;
 	std::size_t pos = 5;
 	std::string channel = buffer.substr(pos, buffer.find("\r\n") - 5);
 	Channel* chan = new Channel(channel);
-	std::cout << "channel substr: " << channel << std::endl;
 
 	if (buffer.find("JOIN #") != std::string::npos) {
 
 		if (_users.find(clientFd)->second->getChannelName() != channel && _channelInfos.find(channel) == _channelInfos.end()) {
-			//et que le channel n'existe pas encore
-			chan->setCurrentUsers();
+			
 			_channelInfos.insert(std::make_pair(channel, chan));
 			_users.find(clientFd)->second->setChannelName(channel);
 			chan->setMapUsers(clientFd, _users.find(clientFd)->second);
+
 			if (chan->getCurrentUsers() == 0) {
 				_users.find(clientFd)->second->setIsOp(true);
 			}
-			std::cout << "First join !" << std::endl;
+
+			chan->setCurrentUsers();
+
 		}
 
 
-		else if (_users.find(clientFd)->second->getChannelName() == channel)
-			std::cout << "Already in channel." << std::endl;
+		else if (_users.find(clientFd)->second->getChannelName() == channel) {
+
+			sendMessage(ERR_USERONCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
+
+		}
 
 
 		else {
+
 			if (_channelInfos.find(channel)->second->getInviteMode() == false) {
-				//user can join
+
 				chan->setCurrentUsers();
 				_channelInfos.insert(std::make_pair(channel, chan));
 				_users.find(clientFd)->second->setChannelName(channel);
 				chan->setMapUsers(clientFd, _users.find(clientFd)->second);
-				std::cout << "Joined without invite !" << std::endl;
+
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->getInvite() == true) {
-				//user can join
+
 				chan->setCurrentUsers();
 				_channelInfos.insert(std::make_pair(channel, chan));
 				_users.find(clientFd)->second->setChannelName(channel);
 				chan->setMapUsers(clientFd, _users.find(clientFd)->second);
-				std::cout << "Joined with invite !" << std::endl;
+
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->getInvite() == false) {
-				//user need to be invited to join
-				std::cout << "User not invited to channel. Can't join." << std::endl;
+
+				sendMessage(ERR_INVITEONLYCHAN(_users.find(clientFd)->second->getNick(), channel), clientFd);
+
 			}
 		}
 	}
 }
 
-void	Server::inviteCmd(std::string buffer) {
-	(void)buffer;
-	// checker la cmd en entier (INVITE nickname #channelname)
-	// send message au client invite
-	// si le channel n'existe pas -> ERR_NOSUCHCHANNEL
-	// si le user qui invite n'est pas sur le channel ->  ERR_NOTONCHANNEL
+void	Server::inviteCmd(std::string buffer, int clientFd) {
 
-	std::cout << "Bien arrive dans INVITE :)" << std::endl;
+	int targetFd;
+	std::size_t pos = 7;
+	std::string nickname = buffer.substr(pos, buffer.find(" #") - pos);
+	std::string channel = buffer.substr((pos + (nickname.length()) + 1), buffer.find("\r\n") - (pos + (nickname.length()) + 1));
+
+	try {
+		targetFd = getUserFromNick(nickname);
+	}
+
+	catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
+
+	if (_channelInfos.find(channel) != _channelInfos.end()) {
+
+		if (_users.find(clientFd)->second->getChannelName() != channel) {
+			sendMessage(ERR_NOTONCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
+		}
+
+		else if (_users.find(clientFd)->second->getIsOp() == false) {
+			sendMessage(ERR_CHANOPRIVSNEEDED(_users.find(clientFd)->second->getNick(), channel), clientFd);
+		}
+
+		sendMessage(RPL_INVITING(_users.find(clientFd)->second->getNick(), nickname, channel), targetFd);
+	}
+
+	else {
+		sendMessage(ERR_NOSUCHCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
+	}
 }
 
-void	Server::kickCmd(std::string buffer) {
-	(void)buffer;
-	std::cout << "Bien arrive dans KICK :)" << std::endl;
+void	Server::kickCmd(std::string buffer, int clientFd) {
+	//tous les users du channel recoivent un message leur indiquant qu'un user a ete kick
+
+	//seuls les op peuvent kick, sinon -> ERR_CHANOPRIVSNEEDED 
+	//si le nom du channel donne ne contient pas le # -> ERR_BADCHANMASK (ou un simple ERR_NOSUCHCHANNEL) ou s'il n'existe pas -> ERR_NOSUCHCHANNEL
+	//si le user a kick n'existe pas -> ERR_NOSUCHNICK
+	//si le user a kick n'est pas sur le channel -> ERR_USERNOTINCHANNEL
+	int targetFd;
+	std::size_t pos = 5;
+	std::string channel;
+	std::string userToKick;
+
+	userToKick = buffer.substr(pos, buffer.find("\r\n") - pos);
+	channel = buffer.substr(pos + userToKick.length() + 1, buffer.find("\r\n") - pos);
+
+	if (_users.find(clientFd)->second->getIsOp() == true) {
+		//si le nom du channel donne ne comporte pas de # -> error
+		if (channel.find("#") == std::string::npos) {
+
+			sendMessage(ERR_BADCHANMASK(_users.find(clientFd)->second->getNick(), ("#" + channel)), clientFd);
+			
+		}
+
+		else if ((targetFd = getUserFromNick(userToKick)) == 0) {
+
+			sendMessage(ERR_NOSUCHNICK(_users.find(clientFd)->second->getNick(), userToKick), clientFd);
+
+		}
+
+		else if (_users.find(targetFd)->second->getChannelName() != channel) {
+
+			sendMessage(ERR_USERNOTINCHANNEL(_users.find(clientFd)->second->getNick(), userToKick, channel), clientFd);
+
+		}
+
+		else {
+
+			_channelInfos.find(channel)->second->sendAllUsers(KICK(_users.find(clientFd)->second->getNick(), _users.find(targetFd)->second->getNick(), channel, ""));
+			_channelInfos.find(channel)->second->kickUserFromChannel(targetFd);
+			_users.find(targetFd)->second->setChannelName("default");
+			_users.find(targetFd)->second->setIsOp(false);
+			_users.find(targetFd)->second->setInvited(false);
+
+		}
+
+	}
+
+	else {
+
+		sendMessage(ERR_CHANOPRIVSNEEDED(_users.find(clientFd)->second->getNick(), channel), clientFd);
+
+	}
 }
 
-void	Server::topicCmd(std::string buffer) {
-	(void)buffer;
+void	Server::topicCmd(std::string buffer, int clientFd) {
+	// (void)buffer;
+	// (void)clientFd;
+	//recuperer le nom du channel
+	//recuperer le nouveau topic
+
+	//channel doit exister -> ERR_NOSUCHCHANNEL ou BADchannelmescouilles
+	//user doit etre op sinon -> ERR_CHANPRIVI
+	//tout le monde dans le channel recoit un message pour indiquer le nouveau topic
+
+	//c'est bizarre parce qu'il faut ecrire </topic #channel > avec l'espace pour que irssi envoie le message au serveur la premiere fois que le topic est change, on peut ensuite juste ecrire </topic #test> ??!!
+	//et les sendMessage print r dans le client
+	std::cout << "buffer dans topic: " << buffer << std::endl;
+
+	std::size_t pos = 6;
+	std::string channel;
+	
+	if (buffer.find(":") != std::string::npos) {
+		channel = buffer.substr(pos, buffer.find(" :") - pos);
+		std::cout << "dans : pour trouver le channel" << std::endl;
+		std::cout << "channel: "  << channel << std::endl;
+	}
+	
+	else {
+		channel = buffer.substr(pos, buffer.find("\r\n") - pos);
+		std::cout << "dans le channel sans :" << std::endl;
+	}
+
+	std::cout << "user op: " << _users.find(clientFd)->second->getIsOp() << std::endl;
+	
+	if (_users.find(clientFd)->second->getIsOp() == true && channel == _users.find(clientFd)->second->getChannelName()) {
+		if (buffer.find(": ") != std::string::npos) {
+			//remove -> TOPIC #channel :  -> la commande est /topic #channel   (2 espaces)
+			std::cout << "dnas le reset de topic" << std::endl;
+			_channelInfos.find(channel)->second->setTopic(" ");
+			std::cout << "RESET TOPIC IS: " << _channelInfos.find(channel)->second->getTopic() << std::endl;
+			_channelInfos.find(channel)->second->sendAllUsers(RPL_NOTOPIC(_users.find(clientFd)->second->getNick(), channel));
+		}
+		
+		else if (buffer.find(":") != std::string::npos) {
+			//set a topic -> TOPIC #channel :blablabla
+			std::string topic = buffer.substr(pos + channel.size() + 2, buffer.find("\r\n") - pos);
+			std::cout << "Topic change: " << topic << std::endl;
+			_channelInfos.find(channel)->second->setTopic(topic);
+			_channelInfos.find(channel)->second->sendAllUsers(RPL_TOPIC(_users.find(clientFd)->second->getNick(), channel, topic));
+		}
+		
+		else {
+			//view the topic -> TOPIC #channel
+			std::cout << "dans le print de topic" << std::endl;
+			_channelInfos.find(channel)->second->getTopic();
+			_channelInfos.find(channel)->second->sendAllUsers(RPL_TOPIC(_users.find(clientFd)->second->getNick(), channel, _channelInfos.find(channel)->second->getTopic()));
+		}
+
+	}
+
+	else {
+		sendMessage(ERR_NOSUCHCHANNEL(_users.find(clientFd)->second->getNick(), ""), clientFd);
+		std::cout << "channel n'existe pas" << std::endl;
+	}
+	
 	std::cout << "Bien arrive dans TOPIC :)" << std::endl;
 }
 
@@ -369,13 +502,14 @@ void Server::deleteUser(int fd) {
 	_users.erase(fd);
 }
 
-// User* Server::getUserFromFd(int fd) {
-// 	std::map<std::string, User*>::iterator it;
-// 	std::string nick;
+int Server::getUserFromNick(std::string nickname) const{
+	int targetFd;
 
-// 	for(it = _users.begin(); it != _users.end(); it++) {
-// 		if (it->second->getFd() == fd)
-// 			nick = it->second->getNick();
-// 	}
-// 	return it->second;
-// }
+	for(std::map<int, User*>::const_iterator it = _users.begin(); it != _users.end(); it++) {
+		if (it->second->getNick() == nickname)
+			targetFd = it->second->getFd();
+		else if (it == _users.end())
+			throw ("User doesn't exist.");
+	}
+	return (targetFd);
+}
