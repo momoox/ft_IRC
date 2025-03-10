@@ -24,6 +24,7 @@ public:
 	const Channel& operator= (Channel const &rhs);
 
 	void setMapUsers(int clientFd, User *user);
+	void setUserOp(int clientFd, bool state);
 	void setChannelName(std::string channelName);
 	void setTopic(std::string topic);
 	void setPasswordChannel(std::string password);
@@ -31,16 +32,18 @@ public:
 	void setlimitUsers(int limitOfUsers);
 	void setInviteMode(bool state);
 	void setTopicMode(bool state);
+	void eraseUserInChannel(int clientFd);
 
 	std::string getChannelName() const;
 	std::string getPasswordChannel() const;
 	std::string getTopic() const;
+	std::map<int, User*>&	getUsersMap() const;
 	int 		getCurrentUsers() const;
 	int			getlimitUsers() const;
 	bool		getInviteMode() const;
 	bool		getTopicMode() const;
 
 	void	kickUserFromChannel(int clientFd);
-	void	sendAllUsers(std::string message);
+	void	sendAllUsers(std::string message, int clientFd);
 
 };

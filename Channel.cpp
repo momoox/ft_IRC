@@ -8,9 +8,9 @@ Channel::Channel(std::string channelName) {
 	_topicMode = false;
 	_passwordChannel = "";
 }
-	
+
 Channel::~Channel() {
-	
+
 }
 
 Channel::Channel(Channel const &src) {
@@ -36,6 +36,13 @@ void Channel::setMapUsers(int clientFd, User *user) {
 	std::cout << "user in channel map: " << _usersInChannel.find(clientFd)->second->getNick() << std::endl;
 }
 
+void Channel::setUserOp(int clientFd, bool state) {
+	if (state == true)
+		_usersInChannel.find(clientFd)->second->setIsOp(true);
+	else
+		_usersInChannel.find(clientFd)->second->setIsOp(false);
+}
+
 void Channel::setChannelName(std::string channelName) {
 	_channelName = channelName;
 }
@@ -49,7 +56,7 @@ void Channel::setTopic(std::string topic) {
 }
 
 void Channel::setCurrentUsers() {
-	_currentUsers += 1; 
+	_currentUsers += 1;
 }
 
 void Channel::setlimitUsers(int limitOfUsers) {
@@ -102,10 +109,20 @@ void Channel::kickUserFromChannel(int clientFd) {
     }
 }
 
-void	Channel::sendAllUsers(std::string message) {
-	std::map<int, User*>::iterator it;
+void	Channel::sendAllUsers(std::string message, int clientFd) {
+	// std::map<int, User*>::iterator it;
 
-	for (it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
-		send(it->first, message.c_str(), message.size(), 0);	
+	std::cout << "sendAll: " << std::endl;
+	for (std::map<int, User*>::iterator it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
+		std::cout << "current fd: " << it->first << std::endl;
+		if (it->first != clientFd) {
+			send(it->first, message.c_str(), message.size(), 0);
+		}
+	}
+}
+
+void Channel::eraseUserInChannel(int clientFd) {
+	if (_usersInChannel.find(clientFd) != _usersInChannel.end()) {
+		_usersInChannel.erase(clientFd);
 	}
 }

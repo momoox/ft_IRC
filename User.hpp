@@ -12,7 +12,7 @@ class User {
 
 		int			_userFD;
 		bool		_isOp;
-		bool		_invited;
+		std::set<std::string>	_invited;
 
 	public:
 		User(int fd);
@@ -24,11 +24,10 @@ class User {
 		void setChannelName(std::string channel);
 		void setFD(int fd);
 		void setIsOp(bool state);
-		void setInvited(bool state);
+		void setInvited(std::string channelName);
+		void removeChannelInvite(std::string channelName);
 
 		bool validNick(const std::string& nick);
-		//je sais pas encore s'il y des trucs a check pour le fullname
-		// std::string valideUsername(const std::string& username);
 
 		std::string getNick() const;
 		std::string getFullName() const;
@@ -37,7 +36,7 @@ class User {
 		std::string getChannelName() const;
 		int getFd() const;
 		bool getIsOp() const;
-		bool getInvite() const;
+		bool isInvited(std::string channelName) const;
 
 		void addToBuffer(std::string str);
 		void eraseBuffer();

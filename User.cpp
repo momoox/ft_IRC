@@ -51,8 +51,8 @@ void User::setIsOp(bool state) {
 	_isOp = state;
 }
 
-void User::setInvited(bool state) {
-	_invited = state;
+void User::setInvited(std::string channelName) {
+	_invited.insert(channelName);
 }
 
 bool User::validNick(const std::string& nick) {
@@ -95,8 +95,11 @@ bool User::getIsOp() const {
 	return (_isOp);
 }
 
-bool User::getInvite() const {
-	return (_invited);
+bool User::isInvited(std::string channelName) const {
+	if (_invited.find(channelName) != _invited.end())
+		return true;
+	else
+		return false;
 }
 
 void User::addToBuffer(std::string str) {
@@ -107,4 +110,8 @@ void User::addToBuffer(std::string str) {
 
 void User::eraseBuffer() {
 	_buffer.erase();
+}
+
+void User::removeChannelInvite(std::string channelName) {
+	_invited.erase(channelName);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/06 20:04:55 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/10 19:01:38 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <map>
 #include <fcntl.h>
 #include <sstream>
+#include <set>
 #include "User.hpp"
 #include "Channel.hpp"
 #include "RPL.hpp"
@@ -41,9 +42,9 @@ private :
 	std::string _password;
 	int _serverFd;
 	int _epollFd;
-	
+
 	socklen_t _addrLen;
-	
+
 	std::map<int, User *> _users;
 	std::map<std::string, Channel*> _channelInfos;
 
@@ -60,31 +61,30 @@ public :
 	struct sockaddr_in address;
 	struct epoll_event epollEvents;
 	struct epoll_event newClient[MAX_EVENTS];
-	
+
 	/*CMD*/
 	void	joinCmd(std::string buffer, int clientFd);
 	void	inviteCmd(std::string buffer, int clientFd);
 	void	kickCmd(std::string buffer, int clientFd);
 	void	topicCmd(std::string buffer, int clientFd);
 	void	modeCmd(std::string buffer, int clientFd);
-	void	privmsgCmd(std::string buffer);
+	void	privmsgCmd(std::string buffer, int clientFd);
 	void	passCmd(std::string buffer, int fd);
 	void	nickCmd(std::string buffer, int fd);
 	void	userCmd(std::string buffer, int fd);
-	
+
 	int getUserFromNick(std::string nickname) const;
-	
+
 	/*RUNTIME*/
 	void acceptClient();
 	void receiveMessageFromClient(int clientFd, User* user);
 	void parserMessage(std::string message, int clientFd);
-	void registerUser(std::string buffer, int fd);
 	void deleteUser(int fd);
 	void sendMessage(std::string message, int fd);
-	
+
 	int getEpollFd() const;
 	int getServerFd() const;
 	socklen_t getAddrLen() const;
-	
+
 
 };
