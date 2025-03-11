@@ -117,7 +117,7 @@ void Server::parserMessage(std::string message, int clientFd) {
 		}
 
 		else if (buffer.find("PING") != std::string::npos) {
-			sendMessage("", clientFd);
+			sendMessage("PONG", clientFd);
 		}
 
 		else if (buffer.find("QUIT") != std::string::npos) {
@@ -192,9 +192,9 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 
 void	Server::joinCmd(std::string buffer, int clientFd) {
 
-	std::size_t pos = 5;
-	std::string channel = buffer.substr(pos, buffer.find("\r\n") - 5);
 	if (buffer.find("JOIN #") != std::string::npos) {
+		std::size_t pos = 5;
+		std::string channel = buffer.substr(pos, buffer.find("\r\n") - 5);
 		Channel* chan = new Channel(channel);
 
 		if (_users.find(clientFd)->second->getChannelName() != channel && _channelInfos.find(channel) == _channelInfos.end()) {
@@ -223,22 +223,24 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 
 
 		else {
+				std::cout << "current invite use : " << _users.find(clientFd)->second->isInvited(channel) << std::endl;
+				std::cout << "invite mode in channel: " << _channelInfos.find(channel)->second->getInviteMode() << std::endl;
 
 			if (_channelInfos.find(channel)->second->getInviteMode() == false) {
 
 				// chan->setCurrentUsers();
+				std::cout << "je suis dans channel invite mode false" << std::endl;
 
 				_channelInfos.find(channel)->second->setCurrentUsers();
 				_channelInfos.find(channel)->second->setMapUsers(clientFd, _users.find(clientFd)->second);
 				if (_users[clientFd]->getChannelName() != "default") {
-				_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+					_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
 				}
 				_users.find(clientFd)->second->setChannelName(channel);
-				std::cout << "USER JOINED CHANNEL :" << _channelInfos.find(channel)->second->getChannelName() << std::endl;
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == true) {
-
+				std::cout << "je suis dans channel invite mode true et user true" << std::endl;
 				_channelInfos.find(channel)->second->setCurrentUsers();
 				_channelInfos.find(channel)->second->setMapUsers(clientFd, _users.find(clientFd)->second);
 				if (_users[clientFd]->getChannelName() != "default") {
@@ -248,20 +250,29 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == false) {
-
+				// std::cout << "je suis dans channel invite mode true et user false" << std::endl;
+				// std::cout << "current user: " << _users.find(clientFd)->second->getFullName() << std::endl;
 				sendMessage(ERR_INVITEONLYCHAN(_users.find(clientFd)->second->getNick(), channel), clientFd);
-
 			}
 		}
 	}
 }
 
+
+//invite n'est pas reconnue au premier appel
 void	Server::inviteCmd(std::string buffer, int clientFd) {
 
 	int targetFd;
 	std::size_t pos = 7;
 	std::string nickname = buffer.substr(pos, buffer.find(" #") - pos);
-	std::string channel = buffer.substr((pos + (nickname.length()) + 1), buffer.find("\r\n") - (pos + (nickname.length()) + 1));
+	std::string channel;
+
+	if (buffer.find("#") != std::string::npos)
+		channel = buffer.substr((pos + (nickname.length()) + 1), buffer.find("\r\n") - (pos + (nickname.length()) + 1));
+	else {
+		sendMessage(ERR_NEEDMOREPARAMS(_users.find(clientFd)->second->getFullName(), "INVITE"), clientFd);
+		return ;
+	}
 
 	try {
 		targetFd = getUserFromNick(nickname);
@@ -282,7 +293,7 @@ void	Server::inviteCmd(std::string buffer, int clientFd) {
 		}
 
 		sendMessage(RPL_INVITING(_users.find(clientFd)->second->getNick(), nickname, channel), targetFd);
-		_users.find(clientFd)->second->setInvited(channel);
+		_users.find(targetFd)->second->setInvited(channel);
 	}
 
 	else {
@@ -417,9 +428,10 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 	// o : Donner/retirer le privilège de l’opérateur de canal
 	// l : Définir/supprimer la limite d’utilisateurs pour le canal
 	std::size_t pos = 5;
-	std::string channel = buffer.substr(pos, buffer.find("\r\n") - 7);
+	std::string channel = buffer.substr(pos, buffer.find("\r\n") - (pos + 3));
 	buffer = buffer.substr(pos, buffer.find("\r\n") - 5);
 
+	std::cout << "string channel: " << channel << std::endl;
 	std::cout << "buffer in mode: " << buffer << std::endl;
 
 	if (buffer.find("#") == std::string::npos) {
@@ -431,6 +443,8 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 		std::cout << "inside +i " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
 		if (_users.find(clientFd)->second->getChannelName() != "default")
 			_channelInfos.find(channel)->second->setInviteMode(true);
+		std::cout << "channel for mode +i: " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
+		std::cout << "current mode is " << _channelInfos.find(channel)->second->getInviteMode() << std::endl;
 	}
 
 	else if (buffer.find("-i") != std::string::npos) {
@@ -546,8 +560,15 @@ void Server::userCmd(std::string buffer, int fd) {
 	_users.find(fd)->second->setFullName(fullname);
 }
 
+// void Server::sendMessage(std::string message, int fd) {
+
+//     send(fd, message.c_str(), message.size(), 0);
+// }
+
 void Server::sendMessage(std::string message, int fd) {
-    send(fd, message.c_str(), message.size(), 0);
+    if (send(fd, message.c_str(), message.size(), 0) == -1) {
+        std::cerr << "Error sending message to client FD " << fd << ": " << strerror(errno) << std::endl;
+    }
 }
 
 void Server::deleteUser(int fd) {

@@ -6,7 +6,7 @@
 #    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/03/04 18:06:03 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/03/11 11:58:44 by mgeisler         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 # ------------------------------ Flags -------------------------------
 
 CC			:=	c++
-FLAGS		:=	-Wall -Wextra -Werror -std=c++98 -g3
+FLAGS		:=	-Wall -Wextra -Werror -std=c++98 -g3 -fsanitize=address
 RM			:=	rm -rf
 
 $(OBJ_DIR)/%.o :%.cpp
