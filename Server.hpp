@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/10 19:01:38 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/13 17:55:00 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,19 @@
 #include <fcntl.h>
 #include <sstream>
 #include <set>
+#include <netdb.h>
 #include "User.hpp"
 #include "Channel.hpp"
 #include "RPL.hpp"
 
-#define MAX_EVENTS 10
+#define MAX_EVENTS 20
 
 class User;
 class Channel;
 
 class Server {
 private :
+	std::string _ip;
 	int _port;
 	std::string _password;
 	int _serverFd;
@@ -68,12 +70,16 @@ public :
 	void	kickCmd(std::string buffer, int clientFd);
 	void	topicCmd(std::string buffer, int clientFd);
 	void	modeCmd(std::string buffer, int clientFd);
+	void	partCmd(std::string buffer, int clientFd);
 	void	privmsgCmd(std::string buffer, int clientFd);
 	void	passCmd(std::string buffer, int fd);
 	void	nickCmd(std::string buffer, int fd);
 	void	userCmd(std::string buffer, int fd);
 
 	int getUserFromNick(std::string nickname) const;
+	std::string findFittingNick(std::string buffer);
+	std::string findFittingChan(std::string buffer);
+
 
 	/*RUNTIME*/
 	void acceptClient();

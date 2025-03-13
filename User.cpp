@@ -55,6 +55,10 @@ void User::setInvited(std::string channelName) {
 	_invited.insert(channelName);
 }
 
+void User::setIsRegistered(bool state) {
+	_isRegistered = state;
+}
+
 bool User::validNick(const std::string& nick) {
 	//pas de double du meme nickname, pas de #,@,:,' '
 	if (containsWrongChar(nick)) {
@@ -89,6 +93,10 @@ std::string User::getChannelName() const {
 
 int User::getFd() const {
 	return (_userFD);
+}
+
+bool User::getIsRegistered() const {
+	return _isRegistered;
 }
 
 bool User::getIsOp() const {

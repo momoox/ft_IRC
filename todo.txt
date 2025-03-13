@@ -1,0 +1,29 @@
+
+GERER LES SIGNAUX
+
+-TOPIC :
+	->securiser substr
+
+-PART :
+	->securiser substr
+
+-JOIN :
+	->ne pas supprimer les channels vides
+
+-INVITE :
+	->securiser substr
+
+-PRIVMSG :
+	->securiser substr
+	->surement vider le buffer apres avoir print
+
+-KICK :
+	->securiser substr
+
+-MODE :
+	->securiser substr
+
+
+
+
+	->faire le dab

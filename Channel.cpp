@@ -9,9 +9,7 @@ Channel::Channel(std::string channelName) {
 	_passwordChannel = "";
 }
 
-Channel::~Channel() {
-
-}
+Channel::~Channel() {}
 
 Channel::Channel(Channel const &src) {
 	*this = src;
@@ -55,11 +53,14 @@ void Channel::setTopic(std::string topic) {
 	_topic = topic;
 }
 
-void Channel::setCurrentUsers() {
-	_currentUsers += 1;
+void Channel::setCurrentUsers(std::string set) {
+	if (set == "+")
+		_currentUsers += 1;
+	else
+		_currentUsers -= 1;
 }
 
-void Channel::setlimitUsers(int limitOfUsers) {
+void Channel::setLimitUsers(int limitOfUsers) {
 	_limitUsers = limitOfUsers;
 }
 
@@ -104,7 +105,6 @@ void Channel::kickUserFromChannel(int clientFd) {
     std::map<int, User*>::iterator it = _usersInChannel.find(clientFd);
 
     if (it != _usersInChannel.end()) {
-        delete it->second;
         _usersInChannel.erase(it);
     }
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
-/*   Updated: 2025/02/26 17:04:03 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/13 19:09:02 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int main(int ac, char **av)
 	User* user;
 	try {
 		while (1) {
-			nbEvents = epoll_wait(server.getEpollFd(), server.newClient, 2, -1);
+			nbEvents = epoll_wait(server.getEpollFd(), server.newClient, MAX_EVENTS, -1);
 			for (int i = 0; i < nbEvents; i++) {
 				user = (User*)server.newClient[i].data.ptr;
 				if (server.newClient[i].data.fd == server.getServerFd()) {

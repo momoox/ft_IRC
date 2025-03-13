@@ -16,6 +16,11 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
 
+	char ip[100];
+	gethostname(ip, sizeof(ip));
+	std::string IP = inet_ntoa(*((struct in_addr *)(gethostbyname(ip))->h_addr_list[0]));
+    _ip = IP;
+
 	int opt = 1;
     if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
 		std::cerr << "Error setting socket options: " << strerror(errno) << std::endl;
@@ -76,32 +81,32 @@ void Server::parserMessage(std::string message, int clientFd) {
 			sendMessage(CAP_LS, clientFd);
 		}
 
+		else if (buffer.find("PRIVMSG") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
+			privmsgCmd(buffer, clientFd);
+		}
+
 		else if (buffer.find("CAP END") != std::string::npos) {
 			sendMessage(RPL_WELCOME(_users.find(clientFd)->second->getFullName()), clientFd);
 		}
 
-		else if (buffer.find("JOIN") != std::string::npos) {
+		else if (buffer.find("JOIN") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
 			joinCmd(buffer, clientFd);
 		}
 
-		else if (buffer.find("INVITE") != std::string::npos) {
+		else if (buffer.find("INVITE") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
 			inviteCmd(buffer, clientFd);
 		}
 
-		else if (buffer.find("KICK") != std::string::npos) {
+		else if (buffer.find("KICK") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
 			kickCmd(buffer, clientFd);
 		}
 
-		else if (buffer.find("TOPIC") != std::string::npos) {
+		else if (buffer.find("TOPIC") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
 			topicCmd(buffer, clientFd);
 		}
 
 		else if (buffer.find("MODE") != std::string::npos) {
 			modeCmd(buffer, clientFd);
-		}
-
-		else if (buffer.find("PRIVMSG") != std::string::npos) {
-			privmsgCmd(buffer, clientFd);
 		}
 
 		else if (buffer.find("PASS") != std::string::npos) {
@@ -117,15 +122,27 @@ void Server::parserMessage(std::string message, int clientFd) {
 		}
 
 		else if (buffer.find("PING") != std::string::npos) {
-			sendMessage("PONG", clientFd);
+			std::string msg ="PONG " + _ip + " " + "localhost" + "\r\n";
+			sendMessage(msg, clientFd);
 		}
 
-		else if (buffer.find("QUIT") != std::string::npos) {
+		else if (buffer.find("PART") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
+			partCmd(buffer, clientFd);
+		}
+
+		else if (buffer.find("QUIT") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
 			deleteUser(clientFd);
 		}
 
+		else if (buffer.find("WHOIS") != std::string::npos) {
+			std::string nick = buffer.substr(buffer.find(" ") + 1, buffer.find("\r\n"));
+			std::string msg = _users.find(clientFd)->second->getNick() + " :End of /WHOIS list" + "\r\n";
+			sendMessage(msg, clientFd);
+		}
+		//! else if (is not registered)
 		else {
-			sendMessage("cmd existe ap wsh ", clientFd);
+			std::string cmd = buffer.substr(0, buffer.find(" "));
+			sendMessage(ERR_UNKNOWNCOMMAND(_users.find(clientFd)->second->getNick(), cmd), clientFd);
 		}
 		buffer = message.substr(pos + 2, message.find("\r\n", pos + 2) - (pos + 2));
 		message = message.substr(pos + 2, message.size() - (pos + 2));
@@ -195,14 +212,20 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 	if (buffer.find("JOIN #") != std::string::npos) {
 		std::size_t pos = 5;
 		std::string channel = buffer.substr(pos, buffer.find("\r\n") - 5);
-		Channel* chan = new Channel(channel);
 
 		if (_users.find(clientFd)->second->getChannelName() != channel && _channelInfos.find(channel) == _channelInfos.end()) {
+			Channel* chan = new Channel(channel);
 
 			_channelInfos.insert(std::make_pair(channel, chan));
 			chan->setMapUsers(clientFd, _users.find(clientFd)->second);
 			if (_users[clientFd]->getChannelName() != "default") {
-			_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+				_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+				_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
+				if (_channelInfos[channel]->getCurrentUsers() == 0) {
+					//erase le channel
+					_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+					_channelInfos.erase(_users[clientFd]->getChannelName());
+				}
 			}
 			_users.find(clientFd)->second->setChannelName(channel);
 
@@ -210,10 +233,9 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 				_users.find(clientFd)->second->setIsOp(true);
 			}
 
-			chan->setCurrentUsers();
+			chan->setCurrentUsers("+");
 			sendMessage(JOIN(_users[clientFd]->getNick(), _users[clientFd]->getFullName(), channel), clientFd);
 		}
-
 
 		else if (_users.find(clientFd)->second->getChannelName() == channel) {
 
@@ -231,55 +253,74 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 				// chan->setCurrentUsers();
 				std::cout << "je suis dans channel invite mode false" << std::endl;
 
-				_channelInfos.find(channel)->second->setCurrentUsers();
+				_channelInfos.find(channel)->second->setCurrentUsers("+");
 				_channelInfos.find(channel)->second->setMapUsers(clientFd, _users.find(clientFd)->second);
 				if (_users[clientFd]->getChannelName() != "default") {
 					_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+					_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
+					if (_channelInfos[channel]->getCurrentUsers() == 0) {
+						//erase le channel
+						_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+						_channelInfos.erase(_users[clientFd]->getChannelName());
+					}
 				}
 				_users.find(clientFd)->second->setChannelName(channel);
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == true) {
 				std::cout << "je suis dans channel invite mode true et user true" << std::endl;
-				_channelInfos.find(channel)->second->setCurrentUsers();
+				_channelInfos.find(channel)->second->setCurrentUsers("+");
 				_channelInfos.find(channel)->second->setMapUsers(clientFd, _users.find(clientFd)->second);
 				if (_users[clientFd]->getChannelName() != "default") {
-				_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+					_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
+					_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
+					if (_channelInfos[channel]->getCurrentUsers() == 0) {
+						//erase le channel
+						_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+						_channelInfos.erase(_users[clientFd]->getChannelName());
+					}
 				}
 				_users.find(clientFd)->second->setChannelName(channel);
 			}
 
 			else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == false) {
-				// std::cout << "je suis dans channel invite mode true et user false" << std::endl;
-				// std::cout << "current user: " << _users.find(clientFd)->second->getFullName() << std::endl;
+				std::cout << "je suis dans channel invite mode true et user false" << std::endl;
+				std::cout << "current user: " << _users.find(clientFd)->second->getFullName() << std::endl;
+				std::cout << "current user channel: " << _users.find(clientFd)->second->getChannelName() << std::endl;
 				sendMessage(ERR_INVITEONLYCHAN(_users.find(clientFd)->second->getNick(), channel), clientFd);
 			}
 		}
+		if (_channelInfos.find(channel)->second->getTopic().size() > 0) {
+			sendMessage(RPL_TOPIC(_users.find(clientFd)->second->getNick(), channel, _channelInfos.find(channel)->second->getTopic()), clientFd);
+		}
+		else {
+			sendMessage(RPL_NOTOPIC(_users.find(clientFd)->second->getNick(), channel), clientFd);
+		}
 	}
+
 }
 
 
-//invite n'est pas reconnue au premier appel
 void	Server::inviteCmd(std::string buffer, int clientFd) {
-
+// /invite <nickname> #channel
 	int targetFd;
-	std::size_t pos = 7;
-	std::string nickname = buffer.substr(pos, buffer.find(" #") - pos);
+	//std::size_t pos = 7;
 	std::string channel;
 
 	if (buffer.find("#") != std::string::npos)
-		channel = buffer.substr((pos + (nickname.length()) + 1), buffer.find("\r\n") - (pos + (nickname.length()) + 1));
+		channel = findFittingChan(buffer);
 	else {
-		sendMessage(ERR_NEEDMOREPARAMS(_users.find(clientFd)->second->getFullName(), "INVITE"), clientFd);
+		sendMessage(ERR_NOSUCHCHANNEL(_users.find(clientFd)->second->getNick(), "NO_NAME"), clientFd);
 		return ;
 	}
-
-	try {
-		targetFd = getUserFromNick(nickname);
-	}
-
-	catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
+	std::string nickname = findFittingNick(buffer);
+	std::cout << "nickname: " << nickname << std::endl;
+	std::cout << "channel: " << channel << std::endl;
+	targetFd = getUserFromNick(nickname);
+	if (targetFd < 0) {
+		std::cout << "no user found1" << std::endl;
+		sendMessage(ERR_NOSUCHCHANNEL(_users.find(clientFd)->second->getNick(), nickname), clientFd);
+		return ;
 	}
 
 	if (_channelInfos.find(channel) != _channelInfos.end()) {
@@ -297,6 +338,7 @@ void	Server::inviteCmd(std::string buffer, int clientFd) {
 	}
 
 	else {
+		std::cout << "no channel found" << std::endl;
 		sendMessage(ERR_NOSUCHCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
 	}
 
@@ -314,37 +356,40 @@ void	Server::kickCmd(std::string buffer, int clientFd) {
 	std::string channel;
 	std::string userToKick;
 
-	userToKick = buffer.substr(pos, buffer.find("\r\n") - pos);
-	channel = buffer.substr(pos + userToKick.length() + 1, buffer.find("\r\n") - pos);
+	userToKick = buffer.substr(buffer.find(" ", pos) + 1, buffer.find(" :") - buffer.find(" ", pos) - 1);
+	channel = buffer.substr(buffer.find("#"), buffer.find(" ", 5) - buffer.find("#"));
+	std::cout << "user to kick: " << userToKick << std::endl;
+	std::cout << "channel: " << channel << std::endl;
+
 
 	if (_users.find(clientFd)->second->getIsOp() == true) {
 		//si le nom du channel donne ne comporte pas de # -> error
 		if (channel.find("#") == std::string::npos) {
-
 			sendMessage(ERR_BADCHANMASK(_users.find(clientFd)->second->getNick(), ("#" + channel)), clientFd);
 
 		}
 
 		else if ((targetFd = getUserFromNick(userToKick)) == 0) {
-
+			std::cout << "no user to kick found" << std::endl;
 			sendMessage(ERR_NOSUCHNICK(_users.find(clientFd)->second->getNick(), userToKick), clientFd);
 
 		}
 
 		else if (_users.find(targetFd)->second->getChannelName() != channel) {
-
+			std::cout << "no user to kick in channel" << std::endl;
+			std::cout << "channelname in user: " << _users.find(targetFd)->second->getChannelName() << std::endl;
 			sendMessage(ERR_USERNOTINCHANNEL(_users.find(clientFd)->second->getNick(), userToKick, channel), clientFd);
 
 		}
 
 		else {
-
+			std::cout << "user being kick" << std::endl;
 			_channelInfos.find(channel)->second->sendAllUsers(KICK(_users.find(clientFd)->second->getNick(), _users.find(targetFd)->second->getNick(), channel, ""), 0);
 			_channelInfos.find(channel)->second->kickUserFromChannel(targetFd);
+			_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
 			_users.find(targetFd)->second->setChannelName("default");
 			_users.find(targetFd)->second->setIsOp(false);
 			_users.find(targetFd)->second->removeChannelInvite(channel);
-
 		}
 
 	}
@@ -443,37 +488,43 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 		std::cout << "inside +i " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
 		if (_users.find(clientFd)->second->getChannelName() != "default")
 			_channelInfos.find(channel)->second->setInviteMode(true);
-		std::cout << "channel for mode +i: " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
-		std::cout << "current mode is " << _channelInfos.find(channel)->second->getInviteMode() << std::endl;
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+i", ""), clientFd);
+		// std::cout << "channel for mode +i: " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
+		// std::cout << "current mode is " << _channelInfos.find(channel)->second->getInviteMode() << std::endl;
 	}
 
 	else if (buffer.find("-i") != std::string::npos) {
 		//set channel to non invite
 		_channelInfos.find(channel)->second->setInviteMode(false);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-i", ""), clientFd);
 	}
 
 	else if (buffer.find("+t") != std::string::npos) {
 		//only op can change topic of channel
 		_channelInfos.find(channel)->second->setTopicMode(true);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+t", ""), clientFd);
 	}
 
 	else if (buffer.find("-t") != std::string::npos) {
 		//everyone can change topic of channel
 		_channelInfos.find(channel)->second->setTopicMode(false);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-t", ""), clientFd);
 	}
 
 	else if (buffer.find("+k") != std::string::npos) {
 		//met un mdp sur le channel, les users devront du coup ecrire le mdp en parametre pour pouvoir join, ->  /mode #chan +k <key>
 		std::string password = buffer.substr(pos + channel.size() + 4, buffer.find("\r\n") - pos - channel.size() - 4);
-		std::cout << "password for channel: " << channel << std::endl;
+		// std::cout << "password for channel: " << channel << std::endl;
 		//! modifier join pour prendre en compte une connexion avec mdp
 
 		_channelInfos.find(channel)->second->setPasswordChannel(password);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+k", ""), clientFd);
 	}
 
 	else if (buffer.find("-k") != std::string::npos) {
 		//supprime l'acces via un mdp
 		_channelInfos.find(channel)->second->setPasswordChannel("");
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-k", ""), clientFd);
 	}
 
 	else if (buffer.find("+o") != std::string::npos) {
@@ -483,6 +534,7 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 		int targetFd = getUserFromNick(nick);
 
 		_channelInfos.find(channel)->second->setUserOp(targetFd, true);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+o", ""), clientFd);
 	}
 
 	else if (buffer.find("-o") != std::string::npos) {
@@ -492,6 +544,7 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 		int targetFd = getUserFromNick(nick);
 
 		_channelInfos.find(channel)->second->setUserOp(targetFd, false);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-o", ""), clientFd);
 	}
 
 	else if (buffer.find("+l") != std::string::npos) {
@@ -500,14 +553,37 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 		std::string limit = buffer.substr(pos, buffer.find("\r\n") - pos);
 		int limitOfUsers = atoi(limit.c_str());
 
-		_channelInfos.find(channel)->second->setlimitUsers(limitOfUsers);
+		_channelInfos.find(channel)->second->setLimitUsers(limitOfUsers);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+l", ""), clientFd);
 	}
 
 	else if (buffer.find("-l") != std::string::npos) {
 		//retire la limite de users sur le channel
-		_channelInfos.find(channel)->second->setlimitUsers(0);
+		_channelInfos.find(channel)->second->setLimitUsers(0);
+		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-l", ""), clientFd);
 	}
 	std::cout << "Bien arrive dans MODE :)" << std::endl;
+}
+
+void	Server::partCmd(std::string buffer, int clientFd) {
+	std::size_t pos = 5;
+	std::string channel = buffer.substr(pos, buffer.find("\r\n") - pos);
+	std::cout << "channel: " << channel << std::endl;
+
+	if (_users.find(clientFd)->second->getChannelName() == channel) {
+		_channelInfos[channel]->eraseUserInChannel(clientFd);
+		_users.find(clientFd)->second->setChannelName("default");
+		_users.find(clientFd)->second->setIsOp(false);
+		_channelInfos[channel]->setCurrentUsers("-");
+		if (_channelInfos[channel]->getCurrentUsers() == 0) {
+			_channelInfos[channel]->~Channel();
+			_channelInfos.erase(channel);
+		}
+	}
+
+	else {
+		sendMessage(ERR_NOTONCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
+	}
 }
 
 void	Server::privmsgCmd(std::string buffer, int clientFd) {
@@ -521,9 +597,9 @@ void	Server::privmsgCmd(std::string buffer, int clientFd) {
 	std::cout << "msg : " << msg << std::endl;
 
 	std::cout << "channel in map: " << _channelInfos.find(channel)->second->getChannelName() << std::endl;
-
+	if (_users[clientFd]->getChannelName() == channel) {
 	_channelInfos.find(channel)->second->sendAllUsers(PRIVMSG(_users.find(clientFd)->second->getNick(), channel, msg), clientFd);
-	//! sendAll ne send pas et encore moins a All :,(
+	}
 	//_channelInfos.find(channel)->second->sendAllUsers(":" + _users[clientFd]->getNick() + ":" + msg + "\r\n", clientFd);
 
 	std::cout << "number of users: " << _channelInfos.find(channel)->second->getCurrentUsers() << std::endl;
@@ -538,8 +614,12 @@ void Server::passCmd(std::string buffer, int fd) {
 	std::cout << "server password: " << _password << std::endl;
 
 	if (pwd != _password) {
-		std::cout << "oh nooo" << std::endl;
-		deleteUser(fd);
+		sendMessage(ERR_PASSWDMISMATCH(_users.find(fd)->second->getNick()), fd);
+		//deleteUser(fd);
+	}
+	else {
+		_users[fd]->setIsRegistered(true);
+		//sendMessage(RPL_WELCOME(_users.find(fd)->second->getFullName()), fd);
 	}
 }
 
@@ -572,8 +652,12 @@ void Server::sendMessage(std::string message, int fd) {
 }
 
 void Server::deleteUser(int fd) {
+
+	_channelInfos[_users[fd]->getChannelName()]->eraseUserInChannel(fd);
+
 	delete _users.find(fd)->second;
 	_users.erase(fd);
+
 }
 
 int Server::getUserFromNick(std::string nickname) const{
@@ -583,7 +667,23 @@ int Server::getUserFromNick(std::string nickname) const{
 		if (it->second->getNick() == nickname)
 			targetFd = it->second->getFd();
 		else if (it == _users.end())
-			throw ("User doesn't exist.");
+			return -1;
 	}
 	return (targetFd);
+}
+
+std::string Server::findFittingNick(std::string buffer) {
+	std::map<int, User*>::iterator it = _users.begin();
+	while(buffer.find(it->second->getNick()) == std::string::npos && it != _users.end()) {
+		it++;
+	}
+	return it->second->getNick();
+}
+
+std::string Server::findFittingChan(std::string buffer) {
+	std::map<std::string, Channel*>::iterator it = _channelInfos.begin();
+	while(buffer.find(it->first) == std::string::npos && it != _channelInfos.end()) {
+		it++;
+	}
+	return it->first;
 }

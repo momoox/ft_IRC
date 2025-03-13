@@ -21,15 +21,15 @@ public:
 	Channel(std::string channelName);
 	~Channel();
 	Channel(Channel const &src);
-	const Channel& operator= (Channel const &rhs);
+	const Channel& operator = (Channel const &rhs);
 
 	void setMapUsers(int clientFd, User *user);
 	void setUserOp(int clientFd, bool state);
 	void setChannelName(std::string channelName);
 	void setTopic(std::string topic);
 	void setPasswordChannel(std::string password);
-	void setCurrentUsers();
-	void setlimitUsers(int limitOfUsers);
+	void setCurrentUsers(std::string set);
+	void setLimitUsers(int limitOfUsers);
 	void setInviteMode(bool state);
 	void setTopicMode(bool state);
 	void eraseUserInChannel(int clientFd);

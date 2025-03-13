@@ -9,6 +9,7 @@ class User {
 		std::string	_userIP;
 		std::string _buffer;
 		std::string _channelName;
+		bool		_isRegistered;
 
 		int			_userFD;
 		bool		_isOp;
@@ -25,6 +26,7 @@ class User {
 		void setFD(int fd);
 		void setIsOp(bool state);
 		void setInvited(std::string channelName);
+		void setIsRegistered(bool state);
 		void removeChannelInvite(std::string channelName);
 
 		bool validNick(const std::string& nick);
@@ -34,7 +36,10 @@ class User {
 		std::string getUserIP() const;
 		std::string getBuffer() const;
 		std::string getChannelName() const;
+
+
 		int getFd() const;
+		bool getIsRegistered() const;
 		bool getIsOp() const;
 		bool isInvited(std::string channelName) const;
 
