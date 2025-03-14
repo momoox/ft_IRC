@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/13 17:55:00 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/14 14:14:33 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,8 @@ public :
 	void	userCmd(std::string buffer, int fd);
 
 	int getUserFromNick(std::string nickname) const;
-	std::string findFittingNick(std::string buffer);
-	std::string findFittingChan(std::string buffer);
+	std::string findFittingNick(std::string buffer, int clientFd);
+	std::string findFittingChan(std::string buffer, int clientFd);
 
 
 	/*RUNTIME*/

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RPL.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/12 16:37:12 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/14 21:01:56 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@
 
 #define PRIVMSG(user, target, message)                      (":" + user + " PRIVMSG " + target + " :" + message + "\r\n")
 #define JOIN(nick, user, channel)                           (":" + nick + "!~" + user + "@localhost JOIN " + channel + "\r\n")
-#define KICK(sender, target, channel, reason)               (":" + sender + " KICK " + channel + " " + target + " :" + reason + "\r\n")
-#define PART(nick, user, channel, reason)                   (":" + nick + "!~" + user + "@localhost PART " + channel + " :" + reason + "\r\n")
+#define KICK(sender, target, channel, reason)               (":" + sender + " KICK " + target + " " + channel + " :" + reason + "\r\n")
+#define PART(nick, user, channel)                   (":" + nick + "!" + user + "@localhost PART " + channel + "\r\n")
 #define MODE(sender, target, mode, arg)                     (":" + sender + "@localhost MODE " + target + " " + mode + " " + arg + "\r\n")
 #define NICK(user, nick)                                    (":" + user + " NICK :" + nick + "\r\n")
 

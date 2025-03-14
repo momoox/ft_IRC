@@ -111,7 +111,6 @@ void Channel::kickUserFromChannel(int clientFd) {
 
 void	Channel::sendAllUsers(std::string message, int clientFd) {
 	// std::map<int, User*>::iterator it;
-
 	std::cout << "sendAll: " << std::endl;
 	for (std::map<int, User*>::iterator it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
 		std::cout << "current fd: " << it->first << std::endl;
@@ -122,7 +121,9 @@ void	Channel::sendAllUsers(std::string message, int clientFd) {
 }
 
 void Channel::eraseUserInChannel(int clientFd) {
+
 	if (_usersInChannel.find(clientFd) != _usersInChannel.end()) {
+		std::cout << "in if user erase" << std::endl;
 		_usersInChannel.erase(clientFd);
 	}
 }
