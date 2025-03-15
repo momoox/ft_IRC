@@ -2,28 +2,28 @@
 GERER LES SIGNAUX
 
 -TOPIC :
-	->securiser substr
+	[ ] securiser substr
 
 -PART :
-	->securiser substr
+	[ ] securiser substr
 
 -JOIN :
-	->ne pas supprimer les channels vides
+	[ ] ne pas supprimer les channels vides // ptet si finalement
 
 -INVITE :
-	->securiser substr
+	[x] securiser substr
 
 -PRIVMSG :
-	->securiser substr
-	->surement vider le buffer apres avoir print
+	[ ] securiser substr
+	[ ] surement vider le buffer apres avoir print
 
 -KICK :
-	->securiser substr
+	[ ] securiser substr
 
 -MODE :
-	->securiser substr
+	[ ] securiser substr
 
 
 
 
-	->faire le dab
+	[ ] faire le dab
