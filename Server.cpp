@@ -225,10 +225,11 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 */
 
 void	Server::joinCmd(std::string buffer, int clientFd) {
-
+	
 	if (buffer.find("JOIN #") != std::string::npos) {
 		std::size_t pos = 5;
-		std::string channel = buffer.substr(pos, buffer.find(" ", pos) - pos );
+		std::string channel = buffer.substr(pos, (buffer.find(" ", pos) != std::string::npos ? buffer.find(" ", pos) - pos : buffer.find("\r\n") - pos));
+
 
 		if (_users.find(clientFd)->second->getChannelName() != channel && _channelInfos.find(channel) == _channelInfos.end()) {
 			Channel* chan = new Channel(channel);
@@ -257,7 +258,7 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 			}
 
 			chan->setCurrentUsers("+");
-			sendMessage(JOIN(_users[clientFd]->getNick(), _users[clientFd]->getNick(), channel), clientFd);
+			sendMessage(JOIN(_users[clientFd]->getNick(), _users[clientFd]->getFullName(), channel), clientFd);
 			sendMessage(RPL_NOTOPIC(_users[clientFd]->getNick(), channel), clientFd);
 
 		}
@@ -802,6 +803,8 @@ void	Server::privmsgCmd(std::string buffer, int clientFd) {
 	std::cout << "channel privmsg: " << channel << std::endl;
 	std::string msg = buffer.substr(posMsg, buffer.find("\r\n", posMsg) - posMsg);
 
+	std::cout << "MSG IN MSG : " << msg << std::endl;
+
 	std::cout << "channel in user privmsg: " << _users.find(clientFd)->second->getChannelName() << std::endl;
 	if (channel == " " || msg == " ") {
 		return ;
@@ -820,7 +823,7 @@ void	Server::privmsgCmd(std::string buffer, int clientFd) {
 void Server::passCmd(std::string buffer, int fd) {
 	std::size_t pos = buffer.find("PASS");
 	std::string pwd = buffer.substr(pos + 5, buffer.find("\r\n") - (pos + 5));
-	// std::cout << "password: " << pwd << std::endl;
+	 std::cout << "password: " << pwd << std::endl;
 	// std::cout << "server password: " << _password << std::endl;
 
 	if (pwd != _password) {
@@ -844,8 +847,8 @@ void Server::nickCmd(std::string buffer, int fd) {
 
 void Server::userCmd(std::string buffer, int fd) {
 	std::size_t pos = 5;
-	std::string fullname = buffer.substr(pos, buffer.find(" ") - (pos)); //! findFittingUser
-	// std::cout << "user: " << fullname << std::endl;
+	std::string fullname = buffer.substr(pos, buffer.find(" ", pos) - pos);
+	std::cout << "user: " << fullname << std::endl;
 	_users.find(fd)->second->setFullName(fullname);
 }
 
@@ -865,7 +868,7 @@ void Server::deleteUser(int fd) {
 
 }
 
-int Server::getUserFromNick(std::string nickname) const{
+int Server::getUserFromNick(std::string nickname) const {
 	int targetFd;
 
 	for(std::map<int, User*>::const_iterator it = _users.begin(); it != _users.end(); it++) {

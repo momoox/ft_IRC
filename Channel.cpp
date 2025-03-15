@@ -15,7 +15,7 @@ Channel::Channel(Channel const &src) {
 	*this = src;
 }
 
-const Channel& Channel::operator= (Channel const &rhs) {
+const Channel& Channel::operator = (Channel const &rhs) {
 	if (this != &rhs) {
 		this->_channelName = rhs._channelName;
         this->_passwordChannel = rhs._passwordChannel;
