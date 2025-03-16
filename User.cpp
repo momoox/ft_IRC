@@ -20,6 +20,9 @@ User::User(int fd) {
 	_channelName = "default";
 
 	_isOp = false;
+	_isRegistered = false;
+	_hasPassword = false;
+	_hasBeenWelcomed = false;
 }
 
 User::~User() {
@@ -55,8 +58,17 @@ void User::setInvited(std::string channelName) {
 	_invited.insert(channelName);
 }
 
-void User::setIsRegistered(bool state) {
-	_isRegistered = state;
+void User::setIsRegistered() {
+	if (_nickname != "default" && _fullname != "default" && _hasPassword == true)
+		_isRegistered = true;
+}
+
+void User::setHasBeenWelcomed(bool state) {
+	_hasBeenWelcomed = state;
+}
+
+void User::setHasPassword(bool state) {
+	_hasPassword = state;
 }
 
 bool User::validNick(const std::string& nick) {
@@ -97,6 +109,11 @@ int User::getFd() const {
 
 bool User::getIsRegistered() const {
 	return _isRegistered;
+}
+
+bool User::getHasBeenWelcomed() const {
+
+	return _hasBeenWelcomed;
 }
 
 bool User::getIsOp() const {

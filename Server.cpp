@@ -77,6 +77,7 @@ void Server::parserMessage(std::string message, int clientFd) {
 	// std::cout << "Message: " << message << std::endl;
 	while (!buffer.empty()) {
 		std::cout << "Buffer before check cmd: " << buffer << std::endl;
+
 		if (buffer.find("CAP LS") != std::string::npos) {
 			sendMessage(CAP_LS, clientFd);
 		}
@@ -86,7 +87,7 @@ void Server::parserMessage(std::string message, int clientFd) {
 		}
 
 		else if (buffer.find("CAP END") != std::string::npos) {
-			sendMessage(RPL_WELCOME(_users.find(clientFd)->second->getFullName()), clientFd);
+			//sendMessage(RPL_WELCOME(_users.find(clientFd)->second->getFullName()), clientFd);
 		}
 
 		else if (buffer.find("JOIN") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
@@ -139,7 +140,11 @@ void Server::parserMessage(std::string message, int clientFd) {
 			std::string msg = _users.find(clientFd)->second->getNick() + " :End of /WHOIS list" + "\r\n";
 			sendMessage(msg, clientFd);
 		}
-		//! else if (is not registered)
+
+		else if (_users[clientFd]->getIsRegistered() == false) {
+			sendMessage(NEEDPASS, clientFd);
+		}
+
 		else {
 			std::string cmd = buffer.substr(0, buffer.find(" "));
 			sendMessage(ERR_UNKNOWNCOMMAND(_users.find(clientFd)->second->getNick(), cmd), clientFd);
@@ -225,7 +230,7 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 */
 
 void	Server::joinCmd(std::string buffer, int clientFd) {
-	
+
 	if (buffer.find("JOIN #") != std::string::npos) {
 		std::size_t pos = 5;
 		std::string channel = buffer.substr(pos, (buffer.find(" ", pos) != std::string::npos ? buffer.find(" ", pos) - pos : buffer.find("\r\n") - pos));
@@ -337,19 +342,19 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 				return ;
 			}
 
+			if (_channelInfos.find(channel)->second->getTopic().size() > 0) {
+
+				sendMessage(RPL_TOPIC(_users.find(clientFd)->second->getNick(), channel, _channelInfos.find(channel)->second->getTopic()), clientFd);
+
+			}
+
+			else {
+
+				sendMessage(RPL_NOTOPIC(_users.find(clientFd)->second->getNick(), channel), clientFd);
+
+			}
 		}
 
-		if (_channelInfos.find(channel)->second->getTopic().size() > 0) {
-
-			sendMessage(RPL_TOPIC(_users.find(clientFd)->second->getNick(), channel, _channelInfos.find(channel)->second->getTopic()), clientFd);
-
-		}
-
-		else {
-
-			sendMessage(RPL_NOTOPIC(_users.find(clientFd)->second->getNick(), channel), clientFd);
-
-		}
 
 	}
 
@@ -767,6 +772,7 @@ void	Server::partCmd(std::string buffer, int clientFd) {
 		_channelInfos[channel]->setCurrentUsers("-");
 		//sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 		_channelInfos.find(channel)->second->sendAllUsers(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
+		sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 
 		if (_channelInfos[channel]->getCurrentUsers() == 0) {
 			_channelInfos[channel]->~Channel();
@@ -831,7 +837,15 @@ void Server::passCmd(std::string buffer, int fd) {
 		//deleteUser(fd);
 	}
 	else {
-		_users[fd]->setIsRegistered(true);
+		_users[fd]->setHasPassword(true);
+		_users[fd]->setIsRegistered();
+	}
+	if (_users[fd]->getIsRegistered() == true && _users[fd]->getHasBeenWelcomed() == false) {
+		sendMessage(RPL_WELCOME(_users.find(fd)->second->getNick(), _users.find(fd)->second->getFullName()), fd);
+		sendMessage(RPL_YOURHOST(_users.find(fd)->second->getNick()), fd);
+		sendMessage(RPL_CREATED(_users.find(fd)->second->getNick(), "2025/03/16 11:49:08"), fd);
+		sendMessage(RPL_MYINFO(_users.find(fd)->second->getNick()), fd);
+		_users.find(fd)->second->setHasBeenWelcomed(true);
 	}
 }
 
@@ -842,6 +856,14 @@ void Server::nickCmd(std::string buffer, int fd) {
 
 	if (_users.find(fd)->second->validNick(newNick)) {
 		_users.find(fd)->second->setNick(newNick);
+		_users.find(fd)->second->setIsRegistered();
+	}
+	if (_users[fd]->getIsRegistered() == true && _users[fd]->getHasBeenWelcomed() == false) {
+		sendMessage(RPL_WELCOME(_users.find(fd)->second->getNick(), _users.find(fd)->second->getFullName()), fd);
+		sendMessage(RPL_YOURHOST(_users.find(fd)->second->getNick()), fd);
+		sendMessage(RPL_CREATED(_users.find(fd)->second->getNick(), "2025/03/16 11:49:08"), fd);
+		sendMessage(RPL_MYINFO(_users.find(fd)->second->getNick()), fd);
+		_users.find(fd)->second->setHasBeenWelcomed(true);
 	}
 }
 
@@ -850,6 +872,14 @@ void Server::userCmd(std::string buffer, int fd) {
 	std::string fullname = buffer.substr(pos, buffer.find(" ", pos) - pos);
 	std::cout << "user: " << fullname << std::endl;
 	_users.find(fd)->second->setFullName(fullname);
+	_users.find(fd)->second->setIsRegistered();
+	if (_users[fd]->getIsRegistered() == true && _users[fd]->getHasBeenWelcomed() == false) {
+		sendMessage(RPL_WELCOME(_users.find(fd)->second->getNick(), _users.find(fd)->second->getFullName()), fd);
+		sendMessage(RPL_YOURHOST(_users.find(fd)->second->getNick()), fd);
+		sendMessage(RPL_CREATED(_users.find(fd)->second->getNick(), "2025/03/16 11:49:08"), fd);
+		sendMessage(RPL_MYINFO(_users.find(fd)->second->getNick()), fd);
+		_users.find(fd)->second->setHasBeenWelcomed(true);
+	}
 }
 
 void Server::sendMessage(std::string message, int fd) {

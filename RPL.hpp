@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RPL.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
+/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/14 21:01:56 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/16 11:49:08 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #define CAP_LS "CAP * LS :none\r\n"
 #define INT_MAX 2147483647
 
-#define NETWORK "ft_irc"
+#define NETWORK "gloms & momo irc"
 #define VERSION "0.1.8.45.666"
 
 #define NEEDPASS "Need password to connect\r\n"
@@ -23,11 +23,11 @@
 #define PRIVMSG(user, target, message)                      (":" + user + " PRIVMSG " + target + " :" + message + "\r\n")
 #define JOIN(nick, user, channel)                           (":" + nick + "!~" + user + "@localhost JOIN " + channel + "\r\n")
 #define KICK(sender, target, channel, reason)               (":" + sender + " KICK " + target + " " + channel + " :" + reason + "\r\n")
-#define PART(nick, user, channel)                   (":" + nick + "!" + user + "@localhost PART " + channel + "\r\n")
+#define PART(nick, user, channel)                   		(":" + nick + "!~" + user + "@localhost PART " + channel + " :" + "no reason given" + "\r\n")
 #define MODE(sender, target, mode, arg)                     (":" + sender + "@localhost MODE " + target + " " + mode + " " + arg + "\r\n")
 #define NICK(user, nick)                                    (":" + user + " NICK :" + nick + "\r\n")
 
-#define RPL_WELCOME(user)                            		(":localhost 001 " + user + " :Welcome\r\n")
+#define RPL_WELCOME(user, name)                             (":localhost 001 " + user + " :Welcome to " + NETWORK + ", " + user + "[!" + name + "@localhost]\r\n")
 #define RPL_YOURHOST(user)                                  (":localhost 002 " + user + " :you server are in localhost, running version " + VERSION + "\r\n")
 #define RPL_CREATED(user, time)                             (":localhost 003 " + user + " :This server was create: " + time + "\r\n")
 #define RPL_MYINFO(user)                                    (":localhost 004 " + user + " " + NETWORK + " " + VERSION + " no user mode , channel modes:,,kl,it \r\n")
