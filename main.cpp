@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/13 19:09:02 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/16 22:59:58 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ int main(int ac, char **av)
 	try {
 		while (1) {
 			nbEvents = epoll_wait(server.getEpollFd(), server.newClient, MAX_EVENTS, -1);
+			std::cout << "new event entry" << std::endl;
 			for (int i = 0; i < nbEvents; i++) {
 				user = (User*)server.newClient[i].data.ptr;
 				if (server.newClient[i].data.fd == server.getServerFd()) {

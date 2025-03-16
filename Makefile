@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
+#    By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/03/11 11:58:44 by mgeisler         ###   ########.fr        #
+#    Updated: 2025/03/16 22:59:58 by gloms            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME		:=	IRC
+NAME		:=	ircserv
 
 # ------------------------------ Sources -----------------------------
 

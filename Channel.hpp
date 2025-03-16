@@ -12,6 +12,7 @@ private:
 	std::string _topic;
 	int			_currentUsers;
 	int			_limitUsers;
+	bool		_hasLimitedUsers;
 	bool		_inviteMode;
 	bool		_topicMode;
 
@@ -32,6 +33,7 @@ public:
 	void setLimitUsers(int limitOfUsers);
 	void setInviteMode(bool state);
 	void setTopicMode(bool state);
+	void setHasLimitedUsers(bool state);
 	void eraseUserInChannel(int clientFd);
 
 	std::string getChannelName() const;
@@ -39,10 +41,12 @@ public:
 	std::string getTopic() const;
 	std::map<int, User*>&	getUsersMap() const;
 	std::string allUsersInChannel() const;
+	std::string allModesInChannel() const;
 	int 		getCurrentUsers() const;
 	int			getlimitUsers() const;
 	bool		getInviteMode() const;
 	bool		getTopicMode() const;
+	bool	hasLimitedUsers() const;
 
 	void	kickUserFromChannel(int clientFd);
 	void	sendAllUsers(std::string message, int clientFd);

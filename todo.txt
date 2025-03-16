@@ -1,29 +1,44 @@
-
-GERER LES SIGNAUX
-
--TOPIC :
-	[ ] securiser substr
-
 -PART :
-	[ ] securiser substr
+	[x] securiser substr
 
 -JOIN :
-	[ ] ne pas supprimer les channels vides // ptet si finalement
+	[x] ne pas supprimer les channels vides // ptet si finalement
+	[x] envoyer RPL_CHANNELMODEIS aux nouveaux users
+	[x] verifier la limite de user sur le channel
 
 -INVITE :
 	[x] securiser substr
 
 -PRIVMSG :
-	[ ] securiser substr
-	[ ] surement vider le buffer apres avoir print
+	[x] securiser substr
+	[x] surement vider le buffer apres avoir print
+	[ ] ca print la derniere ligne envoyer dans le channel sur la fenetre de base quand tu part (je crois que c'est ca qu'il se passe)
 
 -KICK :
-	[ ] securiser substr
+	[x] securiser substr
 
 -MODE :
-	[ ] securiser substr
+	[x] securiser substr
+	[x] +i ne fonctionne pas
+	[x] le user doit etre op pour changer les mode -> ERR_CHANOPRIVSNEEDED
+	[x] pb invite op
+	[x] print a tous les users quand un mode est modifie
+	[ ] cmd MODE montre les modes actuels du channel
+	[x] +o fontionne pas
+	[ ]
+
+-Topic :
+	[x] changer le topic pour un non op (-t) fonctionne pas
 
 
+-Nickname :
+	[x] tester 2x le mm nick
+
+-fittingChan :
+	[x] pb channel
+
+	[x] faire le dab
 
 
-	[ ] faire le dab
+	[ ] GERER LES SIGNAUX
+	[ ] CLEANUP FUNCTION

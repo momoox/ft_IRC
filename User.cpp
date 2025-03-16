@@ -1,16 +1,16 @@
 #include "User.hpp"
 
-bool containsWrongChar(const std::string& str) {
-	for (size_t i = 0; i < str.size(); i++) {
-		if (str[i] < 'a' && str[i] > 'z')
-			return true;
-		else if (str[i] < 'A' && str[i] > 'Z')
-			return true;
-		else if (str[i] < '0' && str[i] > '9')
-			return true;
-	}
-	return false;
-}
+// bool containsWrongChar(const std::string& str) {
+// 	for (size_t i = 0; i < str.size(); i++) {
+// 		if (str[i] < 'a' && str[i] > 'z')
+// 			return true;
+// 		else if (str[i] < 'A' && str[i] > 'Z')
+// 			return true;
+// 		else if (str[i] < '0' && str[i] > '9')
+// 			return true;
+// 	}
+// 	return false;
+// }
 
 User::User(int fd) {
 	_nickname = "default";
@@ -71,13 +71,20 @@ void User::setHasPassword(bool state) {
 	_hasPassword = state;
 }
 
-bool User::validNick(const std::string& nick) {
-	//pas de double du meme nickname, pas de #,@,:,' '
-	if (containsWrongChar(nick)) {
-		return (false);
-	}
-	return (true);
-}
+// bool User::validNick(const std::string& nick) {
+// 	//pas de double du meme nickname, pas de #,@,:,' '
+// 	if (containsWrongChar(nick)) {
+// 		return (false);
+// 	}
+
+// 	std::map<int, User*>::iterator it;
+// 	for (it = _users.begin(); it != _users.end(); it++) {
+// 		if (it->second->getNick() == nick)
+// 			return (false);
+// 	}
+
+// 	return (true);
+// }
 
 // std::string User::valideUsername(const std::string& username) {
 // 	return

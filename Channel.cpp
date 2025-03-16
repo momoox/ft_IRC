@@ -3,9 +3,10 @@
 Channel::Channel(std::string channelName) {
 	_channelName = channelName;
 	_currentUsers = 0;
-	_limitUsers = 0;
+	_limitUsers = 100;
 	_inviteMode = false;
 	_topicMode = false;
+	_hasLimitedUsers = false;
 	_passwordChannel = "";
 }
 
@@ -23,6 +24,7 @@ const Channel& Channel::operator = (Channel const &rhs) {
         this->_limitUsers = rhs._limitUsers;
         this->_inviteMode = rhs._inviteMode;
         this->_topicMode = rhs._topicMode;
+		this->_hasLimitedUsers = rhs._hasLimitedUsers;
 	}
 
 	return (*this);
@@ -60,8 +62,8 @@ void Channel::setCurrentUsers(std::string set) {
 		_currentUsers -= 1;
 }
 
-void Channel::setLimitUsers(int limitOfUsers) {
-	_limitUsers = limitOfUsers;
+void Channel::setHasLimitedUsers(bool state) {
+	_hasLimitedUsers = state;
 }
 
 void Channel::setInviteMode(bool state) {
@@ -70,6 +72,10 @@ void Channel::setInviteMode(bool state) {
 
 void Channel::setTopicMode(bool state) {
 	_topicMode = state;
+}
+
+void Channel::setLimitUsers(int limitOfUsers) {
+	_limitUsers = limitOfUsers;
 }
 
 std::string Channel::getChannelName() const {
@@ -99,6 +105,20 @@ std::string Channel::allUsersInChannel() const {
 	return (allUsers);
 }
 
+std::string Channel::allModesInChannel() const {
+	std::string allModes = "";
+
+	if (_inviteMode == true)
+		allModes += "i";
+	if (_topicMode == true)
+		allModes += "t";
+	if (_limitUsers != 100)
+		allModes += "l";
+	if (_passwordChannel != "")
+		allModes += "k";
+	return (allModes);
+}
+
 int Channel::getCurrentUsers() const
 {
 	return (_currentUsers);
@@ -114,6 +134,12 @@ bool Channel::getInviteMode() const {
 
 bool Channel::getTopicMode() const {
 	return (_topicMode);
+}
+
+bool Channel::hasLimitedUsers() const {
+	if (_hasLimitedUsers == true)
+		return (true);
+	return (false);
 }
 
 void Channel::kickUserFromChannel(int clientFd) {
