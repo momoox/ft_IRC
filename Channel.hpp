@@ -38,6 +38,7 @@ public:
 	std::string getPasswordChannel() const;
 	std::string getTopic() const;
 	std::map<int, User*>&	getUsersMap() const;
+	std::string allUsersInChannel() const;
 	int 		getCurrentUsers() const;
 	int			getlimitUsers() const;
 	bool		getInviteMode() const;

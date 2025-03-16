@@ -247,11 +247,11 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 				_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
 				_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
 
-				if (_channelInfos[channel]->getCurrentUsers() == 0) {
-					//erase le channel
-					_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
-					_channelInfos.erase(_users[clientFd]->getChannelName());
-				}
+				// if (_channelInfos[channel]->getCurrentUsers() == 0) {
+				// 	//erase le channel
+				// 	_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+				// 	_channelInfos.erase(_users[clientFd]->getChannelName());
+				// }
 
 			}
 
@@ -265,6 +265,8 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 			chan->setCurrentUsers("+");
 			sendMessage(JOIN(_users[clientFd]->getNick(), _users[clientFd]->getFullName(), channel), clientFd);
 			sendMessage(RPL_NOTOPIC(_users[clientFd]->getNick(), channel), clientFd);
+			sendMessage(RPL_NAMREPLY(_users[clientFd]->getNick(), channel) + _channelInfos[channel]->allUsersInChannel() + "\r\n" , clientFd);
+			sendMessage(":localhost 366 " + _users[clientFd]->getNick() + " " + channel + " :End of /NAMES list\r\n", clientFd);
 
 		}
 
@@ -290,15 +292,17 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 						_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
 						_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
 
-						if (_channelInfos[channel]->getCurrentUsers() == 0) {
-							//erase le channel
-							_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
-							_channelInfos.erase(_users[clientFd]->getChannelName());
-						}
+						// if (_channelInfos[channel]->getCurrentUsers() == 0) {
+						// 	//erase le channel
+						// 	_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+						// 	_channelInfos.erase(_users[clientFd]->getChannelName());
+						// }
 
 					}
 
 					_users.find(clientFd)->second->setChannelName(channel);
+					sendMessage(RPL_NAMREPLY(_users[clientFd]->getNick(), channel) + _channelInfos[channel]->allUsersInChannel() + "\r\n" , clientFd);
+					sendMessage(":localhost 366 " + _users[clientFd]->getNick() + " " + channel + " :End of /NAMES list\r\n", clientFd);
 
 				}
 
@@ -312,16 +316,18 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 						_channelInfos[_users[clientFd]->getChannelName()]->eraseUserInChannel(clientFd);
 						_channelInfos[_users[clientFd]->getChannelName()]->setCurrentUsers("-");
 
-						if (_channelInfos[channel]->getCurrentUsers() == 0) {
+						// if (_channelInfos[channel]->getCurrentUsers() == 0) {
 
-							_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
-							_channelInfos.erase(_users[clientFd]->getChannelName());
+						// 	_channelInfos[_users[clientFd]->getChannelName()]->~Channel();
+						// 	_channelInfos.erase(_users[clientFd]->getChannelName());
 
-						}
+						// }
 
 					}
 
 					_users.find(clientFd)->second->setChannelName(channel);
+					sendMessage(RPL_NAMREPLY(_users[clientFd]->getNick(), channel) + _channelInfos[channel]->allUsersInChannel() + "\r\n" , clientFd);
+					sendMessage(":localhost 366 " + _users[clientFd]->getNick() + " " + channel + " :End of /NAMES list\r\n", clientFd);
 
 				}
 
@@ -770,7 +776,6 @@ void	Server::partCmd(std::string buffer, int clientFd) {
 		_users.find(clientFd)->second->setChannelName("default");
 		_users.find(clientFd)->second->setIsOp(false);
 		_channelInfos[channel]->setCurrentUsers("-");
-		//sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 		_channelInfos.find(channel)->second->sendAllUsers(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 		sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 
@@ -781,7 +786,7 @@ void	Server::partCmd(std::string buffer, int clientFd) {
 	}
 
 	else {
-		sendMessage(ERR_NOTONCHANNEL(_users.find(clientFd)->second->getNick(), channel), clientFd);
+		sendMessage(ERR_NOTONCHANNEL(_users.find(clientFd)->second->getFullName(), channel), clientFd);
 	}
 }
 

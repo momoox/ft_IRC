@@ -84,7 +84,23 @@ std::string Channel::getTopic() const{
 	return (_topic);
 }
 
-int Channel::getCurrentUsers() const {
+std::string Channel::allUsersInChannel() const {
+	std::string allUsers;
+	std::string opUsers;
+
+	for (std::map<int, User*>::const_iterator it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
+		if (it->second->getIsOp() == true)
+			opUsers += "@" + it->second->getNick() + " ";
+		else
+			allUsers += it->second->getNick() + " ";
+	}
+	allUsers += opUsers;
+	std::cout << "allUsers: " << allUsers << std::endl;
+	return (allUsers);
+}
+
+int Channel::getCurrentUsers() const
+{
 	return (_currentUsers);
 }
 

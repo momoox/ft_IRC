@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/16 11:49:08 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/16 14:56:23 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #define RPL_CREATED(user, time)                             (":localhost 003 " + user + " :This server was create: " + time + "\r\n")
 #define RPL_MYINFO(user)                                    (":localhost 004 " + user + " " + NETWORK + " " + VERSION + " no user mode , channel modes:,,kl,it \r\n")
 
+#define	RPL_NAMREPLY(user, channel)                   		(":localhost 353 " + user + " = " + channel + " :")
 #define RPL_LUSERCLIENT(user, u, i, s)                      (":localhost 251 " + user + " :There are " + u + " users and " + i + " invisible on " + s + " servers\r\n")
 #define RPL_LUSEROP(user, ops)                              (":localhost 252 " + user + " " + ops + " :operator(s) online\r\n")
 #define RPL_LUSERCHANNELS(user, ch)                         (":localhost 254 " + user + " " + ch + " :channels formed\r\n")
