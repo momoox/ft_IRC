@@ -16,6 +16,7 @@ User::User(int fd) {
 	_nickname = "default";
 	_fullname = "default";
 	_userIP = "default";
+	_buffer = "";
 	_userFD = fd;
 	_channelName = "default";
 

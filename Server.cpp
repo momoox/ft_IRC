@@ -1,11 +1,21 @@
 #include "Server.hpp"
 
 Server::~Server() {
-	for (std::map<int, User *>::iterator it = _users.begin(); it != _users.end(); it++) {
-		delete it->second;
-	}
 	close(_serverFd);
 	close(_epollFd);
+
+	for (std::map<int, User *>::iterator it = _users.begin(); it != _users.end();) {
+		delete it->second;
+		_users.erase(it);
+		it = _users.begin();
+	}
+
+	for (std::map<std::string, Channel *>::iterator it = _channelInfos.begin(); it != _channelInfos.end();) {
+		delete it->second;
+		_channelInfos.erase(it);
+		it = _channelInfos.begin();
+	}
+
 }
 
 Server::Server(int port, std::string password) : _port(port), _password(password)
@@ -812,10 +822,10 @@ void	Server::partCmd(std::string buffer, int clientFd) {
 		_channelInfos.find(channel)->second->sendAllUsers(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 		sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 
-		if (_channelInfos[channel]->getCurrentUsers() == 0) {
-			_channelInfos[channel]->~Channel();
-			_channelInfos.erase(channel);
-		}
+		// if (_channelInfos[channel]->getCurrentUsers() == 0) {
+		// 	_channelInfos[channel]->~Channel();
+		// 	_channelInfos.erase(channel);
+		// }
 	}
 
 	else {

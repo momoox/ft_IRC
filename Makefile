@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+         #
+#    By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/05 16:12:47 by mgeisler          #+#    #+#              #
-#    Updated: 2025/03/16 22:59:58 by gloms            ###   ########.fr        #
+#    Updated: 2025/03/17 18:00:09 by mgeisler         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJS		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 # ------------------------------ Flags -------------------------------
 
 CC			:=	c++
-FLAGS		:=	-Wall -Wextra -Werror -std=c++98 -g3 -fsanitize=address
+FLAGS		:=	-Wall -Wextra -Werror -std=c++98 -g3
 RM			:=	rm -rf
 
 $(OBJ_DIR)/%.o :%.cpp
