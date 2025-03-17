@@ -147,7 +147,7 @@ bool User::getIsDead() const {
 void User::addToBuffer(std::string str) {
 	// std::cout << "str = [" << str << "]" << std::endl;
 	// std::cout << "buffer = [" << _buffer << "]" << std::endl;
-	_buffer += str;
+	_buffer.append(str);
 }
 
 void User::eraseBuffer() {

@@ -186,11 +186,10 @@ void	Server::acceptClient() {
 	event.data.ptr = user;
 	_users.insert(std::make_pair(newClientFd, user));
 	epoll_ctl(_epollFd, EPOLL_CTL_ADD, newClientFd, &event);
-	std::cout << "user dans: " << _users.find(newClientFd)->second->getNick() << std::endl;
 }
 
 void	Server::receiveMessageFromClient(int clientFd, User* user) {
-	char buffer[1024];
+	char buffer[1025] = {0};
 
 	int readBytes = recv(clientFd, buffer, 1024, 0);
 
@@ -212,7 +211,6 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 	}
 
 	if (readBytes > 0) {
-        buffer[readBytes] = '\0'; // Null-terminate the buffer
         std::string buff_str = std::string(buffer);
         user->addToBuffer(buff_str);
     }
@@ -229,10 +227,11 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
         	user->eraseBuffer();
     }
 
-    else {
-        std::string buff_str = std::string(buffer);
-        user->addToBuffer(buff_str);
-    }
+    // else {
+    //     std::string buff_str = std::string(buffer);
+	// 	std::cout << "buffer else: " << buff_str << std::endl;
+    //     user->addToBuffer(buff_str);
+    // }
 
 }
 
