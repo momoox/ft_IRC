@@ -6,11 +6,17 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/16 22:59:58 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/17 04:18:07 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+
+void signal_hand(int signum)
+{
+    (void)signum;
+    throw std::logic_error(" \033[1;31m\nNeed to stop server\033[0m");
+}
 
 int main(int ac, char **av)
 {
@@ -23,9 +29,9 @@ int main(int ac, char **av)
 	int nbEvents = 0;
 	User* user;
 	try {
+		signal(SIGINT, signal_hand);
 		while (1) {
 			nbEvents = epoll_wait(server.getEpollFd(), server.newClient, MAX_EVENTS, -1);
-			std::cout << "new event entry" << std::endl;
 			for (int i = 0; i < nbEvents; i++) {
 				user = (User*)server.newClient[i].data.ptr;
 				if (server.newClient[i].data.fd == server.getServerFd()) {
@@ -40,5 +46,6 @@ int main(int ac, char **av)
 	}
 	catch (const std::exception &e) {
 		std::cerr << e.what() << std::endl;
+		server.~Server();
 	}
 }

@@ -147,3 +147,10 @@ void User::eraseBuffer() {
 void User::removeChannelInvite(std::string channelName) {
 	_invited.erase(channelName);
 }
+
+void User::eraseEnterInBuffer() {
+	if (_buffer.find("\r\n") != std::string::npos)
+		_buffer = _buffer.substr(0, _buffer.size() - 2);
+	else if (_buffer.find("\n") != std::string::npos)
+		_buffer = _buffer.substr(0, _buffer.size() - 1);
+}

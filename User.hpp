@@ -21,6 +21,7 @@ class User {
 		User(int fd);
 		~User();
 
+		void eraseEnterInBuffer();
 		void setNick(std::string nickname);
 		void setFullName(std::string fullname);
 		void setUserIP(std::string IP);

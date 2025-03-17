@@ -6,12 +6,13 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/09 19:33:39 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/16 22:59:58 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/17 04:15:28 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <csignal>
 #include <errno.h>
 #include <iostream>
 #include <stdio.h>

@@ -6,7 +6,7 @@
 /*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/16 14:56:23 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/17 03:49:26 by gloms            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 #define PRIVMSG(user, target, message)                      (":" + user + " PRIVMSG " + target + " :" + message + "\r\n")
 #define JOIN(nick, user, channel)                           (":" + nick + "!~" + user + "@localhost JOIN " + channel + "\r\n")
-#define KICK(sender, target, channel, reason)               (":" + sender + " KICK " + target + " " + channel + " :" + reason + "\r\n")
+#define KICK(sender, target, channel, reason)               (":" + sender + " KICK " + channel + " " + target + " :" + reason + "\r\n")
 #define PART(nick, user, channel)                   		(":" + nick + "!~" + user + "@localhost PART " + channel + " :" + "no reason given" + "\r\n")
 #define MODE(sender, target, mode, arg)                     (":" + sender + "@localhost MODE " + target + " " + mode + " " + arg + "\r\n")
 #define NICK(user, nick)                                    (":" + user + " NICK :" + nick + "\r\n")

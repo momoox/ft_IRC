@@ -1,7 +1,11 @@
 #include "Server.hpp"
 
 Server::~Server() {
+	for (std::map<int, User *>::iterator it = _users.begin(); it != _users.end(); it++) {
+		delete it->second;
+	}
 	close(_serverFd);
+	close(_epollFd);
 }
 
 Server::Server(int port, std::string password) : _port(port), _password(password)
@@ -199,7 +203,12 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
         user->addToBuffer(buff_str);
     }
 
-    if (readBytes >= 2 && strncmp(buffer + readBytes - 2, "\r\n", 2) == 0) {
+	if (user->getBuffer().find("\n") != std::string::npos) {
+		user->eraseEnterInBuffer();
+		user->addToBuffer("\r\n");
+	}
+
+    if (readBytes >= 2 && user->getBuffer().find("\r\n") != std::string::npos) {
         //user->addToBuffer(std::string(buffer));
         parserMessage(user->getBuffer(), clientFd);
         user->eraseBuffer();
@@ -508,7 +517,8 @@ void	Server::kickCmd(std::string buffer, int clientFd) {
 			_users.find(targetFd)->second->setChannelName("default");
 			_users.find(targetFd)->second->setIsOp(false);
 			_users.find(targetFd)->second->removeChannelInvite(channel);
-			_channelInfos.find(channel)->second->sendAllUsers(KICK(_users.find(clientFd)->second->getNick(), _users.find(targetFd)->second->getNick(), channel, ""), 0);
+			//_channelInfos.find(channel)->second->sendAllUsers(KICK(_users.find(clientFd)->second->getNick(), _users.find(targetFd)->second->getNick(), channel, ""), 0);
+			sendMessage(KICK(_users.find(clientFd)->second->getNick(), _users.find(targetFd)->second->getNick(), channel, ""), 0);
 
 		}
 
