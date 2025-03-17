@@ -20,6 +20,7 @@ User::User(int fd) {
 	_userFD = fd;
 	_channelName = "default";
 
+	_isDead = false;
 	_isOp = false;
 	_isRegistered = false;
 	_hasPassword = false;
@@ -70,6 +71,10 @@ void User::setHasBeenWelcomed(bool state) {
 
 void User::setHasPassword(bool state) {
 	_hasPassword = state;
+}
+
+void User::setDead(bool state) {
+	_isDead = state;
 }
 
 // bool User::validNick(const std::string& nick) {
@@ -128,11 +133,15 @@ bool User::getIsOp() const {
 	return (_isOp);
 }
 
-bool User::isInvited(std::string channelName) const {
+bool User::getIsInvited(std::string channelName) const {
 	if (_invited.find(channelName) != _invited.end())
 		return true;
 	else
 		return false;
+}
+
+bool User::getIsDead() const {
+	return _isDead;
 }
 
 void User::addToBuffer(std::string str) {
@@ -142,7 +151,13 @@ void User::addToBuffer(std::string str) {
 }
 
 void User::eraseBuffer() {
-	_buffer.erase();
+	try {	
+		_buffer.erase();
+	}
+
+	catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 void User::removeChannelInvite(std::string channelName) {

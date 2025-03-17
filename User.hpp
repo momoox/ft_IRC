@@ -12,6 +12,7 @@ class User {
 		bool		_isRegistered;
 		bool 		_hasPassword;
 		bool		_hasBeenWelcomed;
+		bool		_isDead;
 
 		int			_userFD;
 		bool		_isOp;
@@ -32,6 +33,7 @@ class User {
 		void setIsRegistered();
 		void setHasBeenWelcomed(bool state);
 		void setHasPassword(bool state);
+		void setDead(bool state);
 		void removeChannelInvite(std::string channelName);
 
 		bool validNick(const std::string& nick);
@@ -47,7 +49,8 @@ class User {
 		bool getIsRegistered() const;
 		bool getHasBeenWelcomed() const;
 		bool getIsOp() const;
-		bool isInvited(std::string channelName) const;
+		bool getIsInvited(std::string channelName) const;
+		bool getIsDead() const;
 
 		void addToBuffer(std::string str);
 		void eraseBuffer();

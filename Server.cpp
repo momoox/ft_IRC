@@ -146,7 +146,7 @@ void Server::parserMessage(std::string message, int clientFd) {
 		}
 
 		else if (buffer.find("QUIT") != std::string::npos && _users[clientFd]->getIsRegistered() == true) {
-			deleteUser(clientFd);
+			_users[clientFd]->setDead(true);
 		}
 
 		else if (buffer.find("WHOIS") != std::string::npos) {
@@ -186,6 +186,7 @@ void	Server::acceptClient() {
 	event.data.ptr = user;
 	_users.insert(std::make_pair(newClientFd, user));
 	epoll_ctl(_epollFd, EPOLL_CTL_ADD, newClientFd, &event);
+	std::cout << "user dans: " << _users.find(newClientFd)->second->getNick() << std::endl;
 }
 
 void	Server::receiveMessageFromClient(int clientFd, User* user) {
@@ -205,7 +206,10 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
 		std::cerr << "client FD :" << clientFd << "Error while receiving client message, client disconnected." << std::endl;
 	}
 
-	// std::cout << "Buffer after receive: " << buffer << std::endl;
+	if (_users.find(clientFd)->second->getIsDead() == true) {
+		deleteUser(clientFd);
+		return ;
+	}
 
 	if (readBytes > 0) {
         buffer[readBytes] = '\0'; // Null-terminate the buffer
@@ -221,7 +225,8 @@ void	Server::receiveMessageFromClient(int clientFd, User* user) {
     if (readBytes >= 2 && user->getBuffer().find("\r\n") != std::string::npos) {
         //user->addToBuffer(std::string(buffer));
         parserMessage(user->getBuffer(), clientFd);
-        user->eraseBuffer();
+		if (user)
+        	user->eraseBuffer();
     }
 
     else {
@@ -329,7 +334,7 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 
 				}
 
-				else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == true) {
+				else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->getIsInvited(channel) == true) {
 
 					std::cout << "je suis dans channel invite mode true et user true" << std::endl;
 					_channelInfos.find(channel)->second->setCurrentUsers("+");
@@ -355,7 +360,7 @@ void	Server::joinCmd(std::string buffer, int clientFd) {
 
 				}
 
-				else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->isInvited(channel) == false) {
+				else if (_channelInfos.find(channel)->second->getInviteMode() == true && _users.find(clientFd)->second->getIsInvited(channel) == false) {
 					std::cout << "je suis dans channel invite mode true et user false hihi" << std::endl;
 					sendMessage(ERR_INVITEONLYCHAN(_users.find(clientFd)->second->getFullName(), channel), clientFd);
 
