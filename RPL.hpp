@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RPL.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gloms <rbrendle@student.42mulhouse.fr>     +#+  +:+       +#+        */
+/*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/21 17:46:05 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/17 03:49:26 by gloms            ###   ########.fr       */
+/*   Updated: 2025/03/18 19:10:05 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #define CAP_LS "CAP * LS :none\r\n"
 #define INT_MAX 2147483647
 
-#define NETWORK "gloms & momo irc"
+#define NETWORK "gloms & momox IRC"
 #define VERSION "0.1.8.45.666"
 
 #define NEEDPASS "Need password to connect\r\n"
@@ -39,9 +39,6 @@
 #define RPL_LUSERME(user, c, s)                             (":localhost 255 " + user + " :I have " + c + " clients and " + s + " servers\r\n")
 #define RPL_LOCALUSERS(user, u, m)                          (":localhost 265 " + user + " [" + u + " " + m + "] :Current local users " + u + ", max " + m + "\r\n")
 #define RPL_GLOBALUSERS(user, u, m)                         (":localhost 266 " + user + " [" + u + " " + m + "] :Current global users " + u + ", max " + m + "\r\n")
-#define RPL_MOTDSTART(user)                                 (":localhost 375 " + user + ": - ft_irchevre Message of the day - \r\n")
-#define RPL_MOTD(user, BHEE)                                (":localhost 372 " + user + " :" + BHEE + "\r\n")
-#define RPL_ENDOFMOTD(user)                                 (":localhost 376 " + user + " :End of /MOTD command.\r\n")
 
 #define RPL_UMODEIS(user, mode)                             (":localhost 221 " + user + " " + mode + "\r\n")
 #define RPL_CHANNELMODEIS(user, channel, limit)             (":localhost 324 " + user + " " + channel + " " + limit + "\r\n")
@@ -82,11 +79,13 @@
 #define RPL_ISUPPORT(client)                                (":localhost 005 " + client + " CASEMAPPING=rfc7613 CHANLIMIT=#: CHANMODES=,,kl,it CHANNELLEN=32 CHANTYPES=# ELIST= HOSTLEN=512 KICKLEN=512 MAXTARGETS=1 MODES=1 NETWORK=ft_irchevre NICKLEN=32 PREFIX=(o)@ :Are supported by this server\r\n")
 #define RPL_ISUPPORT2(client)                               (":localhost 005 " + client + " STATUSMSG=@ TARGMAX=PRIVMSG:1,JOIN:,NAMES:,WHO:1,KICK:1 TOPICLEN=512 USERLEN=32 :Are supported by this server\r\n")
 
-#define M "\033[0;33m"
-#define C "\033[0;36m"
-#define R "\033[0;31m"
-#define G "\033[0;32m"
-#define Y "\033[0;33m"
-#define B "\033[0;34m"
-#define P "\033[0;35m"
-#define W "\033[0m"
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32;5;43m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+#define WHITE   "\033[37m"      /* White */
+#define PINK	"\033[38;5;219m"

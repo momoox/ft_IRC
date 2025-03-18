@@ -6,7 +6,7 @@
 /*   By: mgeisler <mgeisler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/22 17:13:01 by gloms             #+#    #+#             */
-/*   Updated: 2025/03/17 19:39:00 by mgeisler         ###   ########.fr       */
+/*   Updated: 2025/03/18 18:00:44 by mgeisler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,16 @@ void signal_hand(int signum)
 int main(int ac, char **av)
 {
 	if (ac != 3) {
-		std::cerr << "Wrong number of arguments. Should have a port and a password." << std::endl;
+		std::cerr << RED << "Wrong number of arguments. Should have a port and a password." << RESET << std::endl;
 		return (1);
 	}
 
 	Server server(atoi(av[1]), av[2]);
 	int nbEvents = 0;
 	User* user;
+
+	std::cout << PINK << "Server started :)" << RESET << std::endl;
+	
 	try {
 		signal(SIGINT, signal_hand);
 		while (1) {
@@ -39,7 +42,6 @@ int main(int ac, char **av)
 				}
 				else {
 					server.receiveMessageFromClient(user->getFd(), user);
-					// handle text or commands
 				}
 			}
 		}

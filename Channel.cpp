@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string channelName) {
+
 	_channelName = channelName;
 	_currentUsers = 0;
 	_limitUsers = 100;
@@ -17,7 +18,9 @@ Channel::Channel(Channel const &src) {
 }
 
 const Channel& Channel::operator = (Channel const &rhs) {
+
 	if (this != &rhs) {
+
 		this->_channelName = rhs._channelName;
         this->_passwordChannel = rhs._passwordChannel;
         this->_currentUsers = rhs._currentUsers;
@@ -31,14 +34,15 @@ const Channel& Channel::operator = (Channel const &rhs) {
 }
 
 void Channel::setMapUsers(int clientFd, User *user) {
-	_usersInChannel.insert(std::make_pair(clientFd, user));
 
-	std::cout << "user in channel map: " << _usersInChannel.find(clientFd)->second->getNick() << std::endl;
+	_usersInChannel.insert(std::make_pair(clientFd, user));
 }
 
 void Channel::setUserOp(int clientFd, bool state) {
+
 	if (state == true)
 		_usersInChannel.find(clientFd)->second->setIsOp(true);
+
 	else
 		_usersInChannel.find(clientFd)->second->setIsOp(false);
 }
@@ -56,8 +60,10 @@ void Channel::setTopic(std::string topic) {
 }
 
 void Channel::setCurrentUsers(std::string set) {
+
 	if (set == "+")
 		_currentUsers += 1;
+
 	else
 		_currentUsers -= 1;
 }
@@ -91,36 +97,43 @@ std::string Channel::getTopic() const{
 }
 
 std::string Channel::allUsersInChannel() const {
+
 	std::string allUsers;
 	std::string opUsers;
 
 	for (std::map<int, User*>::const_iterator it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
 		if (it->second->getIsOp() == true)
 			opUsers += "@" + it->second->getNick() + " ";
+
 		else
 			allUsers += it->second->getNick() + " ";
 	}
+
 	allUsers += opUsers;
-	std::cout << "allUsers: " << allUsers << std::endl;
+
 	return (allUsers);
 }
 
 std::string Channel::allModesInChannel() const {
+
 	std::string allModes = "";
 
 	if (_inviteMode == true)
 		allModes += "i";
+
 	if (_topicMode == true)
 		allModes += "t";
+
 	if (_limitUsers != 100)
 		allModes += "l";
+
 	if (_passwordChannel != "")
 		allModes += "k";
+
 	return (allModes);
 }
 
-int Channel::getCurrentUsers() const
-{
+int Channel::getCurrentUsers() const {
 	return (_currentUsers);
 }
 
@@ -137,8 +150,10 @@ bool Channel::getTopicMode() const {
 }
 
 bool Channel::hasLimitedUsers() const {
+
 	if (_hasLimitedUsers == true)
 		return (true);
+
 	return (false);
 }
 
@@ -152,10 +167,8 @@ void Channel::kickUserFromChannel(int clientFd) {
 }
 
 void	Channel::sendAllUsers(std::string message, int clientFd) {
-	// std::map<int, User*>::iterator it;
-	std::cout << "sendAll: " << std::endl;
+
 	for (std::map<int, User*>::iterator it = _usersInChannel.begin(); it != _usersInChannel.end(); it++) {
-		std::cout << "current fd: " << it->first << std::endl;
 		if (it->first != clientFd) {
 			send(it->first, message.c_str(), message.size(), 0);
 		}
@@ -165,7 +178,6 @@ void	Channel::sendAllUsers(std::string message, int clientFd) {
 void Channel::eraseUserInChannel(int clientFd) {
 
 	if (_usersInChannel.find(clientFd) != _usersInChannel.end()) {
-		std::cout << "in if user erase" << std::endl;
 		_usersInChannel.erase(clientFd);
 	}
 }

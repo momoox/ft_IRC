@@ -9,13 +9,15 @@ class User {
 		std::string	_userIP;
 		std::string _buffer;
 		std::string _channelName;
+
 		bool		_isRegistered;
 		bool 		_hasPassword;
 		bool		_hasBeenWelcomed;
 		bool		_isDead;
+		bool		_isOp;
 
 		int			_userFD;
-		bool		_isOp;
+
 		std::set<std::string>	_invited;
 
 	public:
