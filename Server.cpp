@@ -688,7 +688,18 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 	else if (buffer.find("+o") != std::string::npos) {
 
 		std::string nick = findFittingNick(buffer, clientFd);
+
+		if (nick == " ") {
+			return ;
+		}
+
 		int targetFd = getUserFromNick(nick);
+
+		if (_users.find(targetFd)->second->getChannelName() != channel) {
+
+			sendMessage(ERR_USERNOTINCHANNEL(_users.find(clientFd)->second->getNick(), nick, channel), clientFd);
+			return ;
+		}
 
 		_channelInfos.find(channel)->second->setUserOp(targetFd, true);
 		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "+o", ""), clientFd);
@@ -698,7 +709,18 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 	else if (buffer.find("-o") != std::string::npos) {
 
 		std::string nick = findFittingNick(buffer, clientFd);
+
+		if (nick == " ") {
+			return ;
+		}
+
 		int targetFd = getUserFromNick(nick);
+
+		if (_users.find(targetFd)->second->getChannelName() != channel) {
+
+			sendMessage(ERR_USERNOTINCHANNEL(_users.find(clientFd)->second->getNick(), nick, channel), clientFd);
+			return ;
+		}
 
 		_channelInfos.find(channel)->second->setUserOp(targetFd, false);
 		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-o", ""), clientFd);
@@ -724,7 +746,6 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 
 	else if (buffer.find("-l") != std::string::npos) {
 
-		std::cout << "dans le -l" << std::endl;
 		_channelInfos.find(channel)->second->setHasLimitedUsers(false);
 		_channelInfos.find(channel)->second->setLimitUsers(100);
 		_channelInfos.find(channel)->second->sendAllUsers(MODE(_users.find(clientFd)->second->getNick(), channel, "-l", ""), clientFd);
@@ -752,24 +773,19 @@ void	Server::modeCmd(std::string buffer, int clientFd) {
 void	Server::partCmd(std::string buffer, int clientFd) {
 
 	std::string channel = findFittingChan(buffer, clientFd);
-	std::cout << "channel partCmd: " << channel << std::endl;
 
 	if (channel == " ") {
 		return ;
 	}
 
 	if (_users.find(clientFd)->second->getChannelName() == channel) {
+
 		_channelInfos[channel]->eraseUserInChannel(clientFd);
 		_users.find(clientFd)->second->setChannelName("default");
 		_users.find(clientFd)->second->setIsOp(false);
 		_channelInfos[channel]->setCurrentUsers("-");
 		_channelInfos.find(channel)->second->sendAllUsers(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
 		sendMessage(PART(_users.find(clientFd)->second->getNick(), _users.find(clientFd)->second->getFullName(), channel), clientFd);
-
-		// if (_channelInfos[channel]->getCurrentUsers() == 0) {
-		// 	_channelInfos[channel]->~Channel();
-		// 	_channelInfos.erase(channel);
-		// }
 	}
 
 	else {
